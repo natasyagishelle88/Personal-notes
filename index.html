@@ -196,11 +196,21 @@ body.dark .status-group-label { color: var(--fog-soft); }
   background: var(--linen-card);
   border-radius: var(--radius);
   padding: 14px 16px;
-  display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 8px;
   cursor: pointer;
   border: 1px solid var(--line);
 }
+.person-card-row { display: flex; align-items: center; justify-content: space-between; }
+.card-confirm { margin-top: 10px; }
+.card-confirm input {
+  width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px;
+  font-size: 13px; font-family: 'Karla', sans-serif; background: var(--linen); color: var(--ink);
+}
+body.dark .card-confirm input { background: var(--dusk); border-color: var(--dusk-line); color: var(--fog); }
+.card-confirm-hint { font-size: 11px; color: var(--ink-soft); margin-top: 6px; }
+body.dark .card-confirm-hint { color: var(--fog-soft); }
+.card-confirm-row { display: flex; gap: 8px; margin-top: 8px; }
+.mini-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 body.dark .person-card { background: var(--dusk-card); border-color: var(--dusk-line); }
 .person-card .name { font-family: 'Fraunces', serif; font-size: 16px; }
 .person-card .meta { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
@@ -739,7 +749,7 @@ const people = [
     lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
     qna:[],
     log:[] },
-  { id:12, name:"Natasya Gishelle Jusuf", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+  { id:12, name:"Natasya Gishelle Jusuf (Me)", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
     telegram:"Natasya", phone:"",
     notes:"In PE JAWA 1, Pemuda Jawa",
     notesUpdated:null,
@@ -925,11 +935,59 @@ function renderBoard() {
       const card = document.createElement('div');
       card.className = 'person-card';
       card.onclick = () => openProfile(p.id);
-      card.innerHTML = `<div><div class="name">${p.name}</div><div class="meta">Last contact: ${p.lastContact}</div></div>
-        <div class="status-pill ${p.status}">${statusLabel(p.status)}</div>`;
+      card.innerHTML = `<div class="person-card-row">
+          <div><div class="name">${p.name}</div><div class="meta">Last contact: ${p.lastContact}</div></div>
+          <div class="card-actions"></div>
+        </div>
+        <div class="card-confirm-slot"></div>`;
+      renderCardActions(card, p);
       wrap.appendChild(card);
     });
     board.appendChild(wrap);
+  });
+}
+
+function renderCardActions(card, p) {
+  const actions = card.querySelector('.card-actions');
+  card.querySelector('.card-confirm-slot').innerHTML = "";
+  actions.innerHTML = `<div style="display:flex; align-items:center; gap:8px;">
+      <div class="status-pill ${p.status}">${statusLabel(p.status)}</div>
+      <button class="mini-btn danger card-del">🗑</button>
+    </div>`;
+  actions.querySelector('.card-del').addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    renderCardConfirm(card, p);
+  });
+}
+
+function renderCardConfirm(card, p) {
+  const slot = card.querySelector('.card-confirm-slot');
+  slot.innerHTML = `<div class="card-confirm" onclick="event.stopPropagation()">
+      <input type="text" class="card-confirm-input" placeholder="Type their name to confirm">
+      <div class="card-confirm-hint">Type "${p.name}" exactly, then tap Delete.</div>
+      <div class="card-confirm-row">
+        <button class="mini-btn" data-act="cancel">Cancel</button>
+        <button class="mini-btn danger" data-act="confirm" disabled>Delete</button>
+      </div>
+    </div>`;
+  const input = slot.querySelector('.card-confirm-input');
+  const confirmBtn = slot.querySelector('[data-act="confirm"]');
+  input.addEventListener('input', () => {
+    confirmBtn.disabled = input.value.trim().toLowerCase() !== p.name.trim().toLowerCase();
+  });
+  slot.querySelector('[data-act="cancel"]').addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    slot.innerHTML = "";
+    renderCardActions(card, p);
+  });
+  confirmBtn.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    if (confirmBtn.disabled) return;
+    const idx = people.findIndex(x => x.id === p.id);
+    if (idx > -1) people.splice(idx, 1);
+    renderBoard();
+    renderTodos();
+    toast();
   });
 }
 
@@ -1005,7 +1063,14 @@ function openProfile(id) {
   document.getElementById('fPhone').value = p.phone || "";
   renderNotes(p);
   document.getElementById('profNextStep').innerHTML = p.nextStep
-    ? `<div class="todo-item"><div class="todo-check"></div>${p.nextStep}</div>` : `<div class="sub">No next step set</div>`;
+    ? `<div class="todo-item${p.nextStepDone ? ' done-text' : ''}" id="profNextStepRow"><div class="todo-check${p.nextStepDone ? ' done' : ''}" id="profNextStepCheck"></div>${p.nextStep}</div>`
+    : `<div class="sub">No next step set</div>`;
+  if (p.nextStep) {
+    document.getElementById('profNextStepCheck').onclick = () => {
+      p.nextStepDone = !p.nextStepDone;
+      openProfile(id);
+    };
+  }
 
   const sw = document.getElementById('profStatusSwitch');
   sw.innerHTML = "";
@@ -1166,9 +1231,23 @@ function renderTodos() {
   perPerson.innerHTML = "";
   people.filter(p => p.nextStep).forEach(p => {
     const el = document.createElement('div');
-    el.className = 'todo-item';
-    el.innerHTML = `<div class="todo-check"></div><div>${p.nextStep}</div><div class="todo-owner">${p.name}</div>`;
-    el.onclick = () => openProfile(p.id);
+    el.className = 'todo-item' + (p.nextStepDone ? ' done-text' : '');
+    el.style.cursor = 'pointer';
+    el.innerHTML = `<div class="todo-check${p.nextStepDone ? ' done' : ''}"></div><div style="flex:1;">${p.nextStep}</div><div class="todo-owner">${p.name}</div>
+      <button class="mini-btn danger" style="margin-left:6px;">🗑</button>`;
+    el.querySelector('.todo-check').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      p.nextStepDone = !p.nextStepDone;
+      renderTodos();
+    });
+    el.addEventListener('click', () => openProfile(p.id));
+    el.querySelector('.mini-btn').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      p.nextStep = "";
+      p.nextStepDone = false;
+      renderTodos();
+      toast();
+    });
     perPerson.appendChild(el);
   });
 }
