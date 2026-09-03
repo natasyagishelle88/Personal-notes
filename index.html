@@ -322,6 +322,7 @@ body.dark .log-date { color: var(--fog-soft); }
 body.dark .log-next { background: rgba(124,156,184,0.2); color: var(--cold); }
 
 /* ---- Calendar ---- */
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 10px 0 24px; }
 .cal-dow { font-size: 10px; text-align: center; color: var(--ink-soft); padding-bottom: 4px; }
 body.dark .cal-dow { color: var(--fog-soft); }
@@ -564,7 +565,11 @@ body.dark .journal-save { background: var(--fog); color: var(--dusk); }
 
     <!-- CALENDAR SCREEN -->
     <div class="screen" id="screen-calendar">
-      <div class="section-title" style="margin-top:6px;">September</div>
+      <div class="cal-header">
+        <button class="icon-btn" onclick="changeMonth(-1)">‹</button>
+        <div class="section-title" id="calMonthTitle" style="margin:0;">—</div>
+        <button class="icon-btn" onclick="changeMonth(1)">›</button>
+      </div>
       <div class="cal-grid" id="calGrid"></div>
       <div class="day-detail" id="dayDetail" style="display:none;">
         <div class="dd-title" id="dayDetailTitle">—</div>
@@ -575,6 +580,10 @@ body.dark .journal-save { background: var(--fog); color: var(--dusk); }
     <!-- TODOS SCREEN -->
     <div class="screen" id="screen-todos">
       <div class="section-title" style="margin-top:6px;">My to-do list</div>
+      <div class="journal-compose">
+        <input id="todoInput" placeholder="Add a to-do..." style="width:100%; border:none; background:transparent; font-family:'Karla',sans-serif; font-size:13.5px; color:var(--ink);">
+        <button class="journal-save" onclick="saveTodo()">Add</button>
+      </div>
       <div id="myTodos"></div>
       <div class="section-title">Next steps by person</div>
       <div id="personTodos"></div>
@@ -614,6 +623,7 @@ body.dark .journal-save { background: var(--fog); color: var(--dusk); }
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const CORRECT_PIN = "8888";
 let pin = "";
@@ -671,138 +681,67 @@ function nowStamp() {
     ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-const people = [
-  { id:1, name:"Linda Setiawan", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Linda S (\u1d55\u00b4\ua4b3`\u1d55)/", phone:"",
-    notes:"In PE JAWA 1",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"",
-    qna:[],
-    log:[] },
-  { id:2, name:"Dorote Marenia Dwi Putrandoyo", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"@n14pal28i", phone:"",
-    notes:"New \u2014 hasn't joined any group yet",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Invite directly to PE JAWA 1",
-    qna:[],
-    log:[] },
-  { id:3, name:"Widia Sari Hutabarat", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Widia GYJN", phone:"",
-    notes:"In PE JAWA 1, PE-J-K2, Pemuda Jawa",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"",
-    qna:[],
-    log:[] },
-  { id:4, name:"Bellinda Amanda Laveda Kalontong", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Bella (needs confirmation)", phone:"",
-    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1; confirm Telegram username",
-    qna:[],
-    log:[] },
-  { id:5, name:"Defany Ardyaningrum", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Defany Fany", phone:"",
-    notes:"In PE JAWA 1, Pemuda Jawa",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"",
-    qna:[],
-    log:[] },
-  { id:6, name:"Laura Daniella Anita Sianturi", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Laura Daniella", phone:"",
-    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
-    qna:[],
-    log:[] },
-  { id:7, name:"Christoper Aditya", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Christoper Aditya", phone:"",
-    notes:"In PE JAWA 1, Pemuda Jawa",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"",
-    qna:[],
-    log:[] },
-  { id:8, name:"Stella Ernalita Suryani", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"stellearn (needs confirmation)", phone:"",
-    notes:"In PE JAWA 1, Pemuda Jawa",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Confirm Telegram username",
-    qna:[],
-    log:[] },
-  { id:9, name:"Marchellino Geralda Kalontong", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Marchell", phone:"",
-    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
-    qna:[],
-    log:[] },
-  { id:10, name:"Gracielia Aprily Kurniawan", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Grace (needs confirmation, group owner)", phone:"",
-    notes:"In PE JAWA 1, Pemuda Jawa",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Confirm Telegram username",
-    qna:[],
-    log:[] },
-  { id:11, name:"Ricky Oktavianus", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Riki (needs confirmation)", phone:"",
-    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
-    qna:[],
-    log:[] },
-  { id:12, name:"Natasya Gishelle Jusuf (Me)", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Natasya", phone:"",
-    notes:"In PE JAWA 1, Pemuda Jawa",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"",
-    qna:[],
-    log:[] },
-  { id:13, name:"Renaldy Hosea Puah", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Renaldy Hosea", phone:"",
-    notes:"In PE JAWA 1, Pemuda Jawa",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"",
-    qna:[],
-    log:[] },
-  { id:14, name:"Darling Cemara Nuban", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"@Darlingcn", phone:"",
-    notes:"New \u2014 hasn't joined any group yet",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Invite directly to PE JAWA 1",
-    qna:[],
-    log:[] },
-  { id:15, name:"Fransisca", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"@Frnsdewi", phone:"",
-    notes:"New \u2014 hasn't joined any group yet",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Invite directly to PE JAWA 1",
-    qna:[],
-    log:[] },
-  { id:16, name:"Owen Juan Christian", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Owen S (needs confirmation)", phone:"",
-    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
-    qna:[],
-    log:[] },
-  { id:17, name:"Sefen Putra Jaya Giawa", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
-    telegram:"Sefen Giawa", phone:"",
-    notes:"In PE JAWA 1, Pemuda Jawa",
-    notesUpdated:null,
-    lastContact:"—", nextStep:"",
-    qna:[],
-    log:[] }
-];
+const SUPABASE_URL = "https://vvtbvhriiwkdssgsbhld.supabase.co";
+const SUPABASE_KEY = "sb_publishable_fgM30ZHNlkyZ0LtFb1WBzA_yxiTh1g_";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const myTodos = [
-  { text:"Send intro messages to the 3 new members (Dorote, Darling, Fransisca)", done:false },
-  { text:"Ask leader/admin to move Bellinda, Laura, Marchellino, Ricky, and Owen into PE JAWA 1", done:false },
-  { text:"Confirm Telegram usernames for Bella, Stella, Grace, Riki, and Owen", done:false }
-];
-
+let people = [];
+let myTodos = [];
+let journalEntries = [];
 let currentProfileId = null;
-let journalEntries = [
-  { date:"Aug 28, 2026 · 9:14 PM", text:"First week as leader. Nervous about reaching people I've never met, but I keep coming back to wanting them to feel like family, not a checklist." }
-];
+
+function formatTs(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function rowToPerson(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    age: row.age || "", dob: row.dob || "", location: row.location || "",
+    job: row.job || "", family: row.family || "", joined: row.joined || "",
+    telegram: row.telegram || "", phone: row.phone || "",
+    notes: row.notes || "", notesUpdated: formatTs(row.notes_updated),
+    lastContact: row.last_contact || "—",
+    nextStep: row.next_step || "", nextStepDone: !!row.next_step_done,
+    qna: [], log: []
+  };
+}
+function rowToQna(row) { return { id: row.id, q: row.question, a: row.answer, ts: formatTs(row.created_at) }; }
+function rowToLog(row) { return { id: row.id, date: row.entry_date, text: row.entry_text, next: row.next_step, ts: formatTs(row.created_at) }; }
+function rowToJournal(row) { return { id: row.id, date: formatTs(row.created_at), text: row.entry_text }; }
+function rowToTodo(row) { return { id: row.id, text: row.text_content, done: row.done }; }
+
+// ---- Data loading ----
+async function loadPeople() {
+  const { data, error } = await sb.from('people').select('*').order('created_at', { ascending: true });
+  if (error) { console.error(error); return; }
+  people = (data || []).map(rowToPerson);
+}
+async function loadJournal() {
+  const { data, error } = await sb.from('journal_entries').select('*').order('created_at', { ascending: false });
+  if (error) { console.error(error); return; }
+  journalEntries = (data || []).map(rowToJournal);
+}
+async function loadTodos() {
+  const { data, error } = await sb.from('todos').select('*').order('created_at', { ascending: true });
+  if (error) { console.error(error); return; }
+  myTodos = (data || []).map(rowToTodo);
+}
+async function loadQnaFor(personId) {
+  const { data, error } = await sb.from('qna').select('*').eq('person_id', personId).order('created_at', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return (data || []).map(rowToQna);
+}
+async function loadLogFor(personId) {
+  const { data, error } = await sb.from('meeting_log').select('*').eq('person_id', personId).order('created_at', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return (data || []).map(rowToLog);
+}
 
 function personSummary(p) {
   return `${p.name}
@@ -872,11 +811,15 @@ function handleKey(k) {
   if (pin.length === 4) {
     if (pin === CORRECT_PIN) {
       playChime();
-      setTimeout(() => {
+      err.textContent = "Loading your data…";
+      init().then(() => {
         document.getElementById('lockScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
-        init();
-      }, 250);
+      }).catch((e) => {
+        console.error(e);
+        err.textContent = "Couldn't connect — check your internet and try again.";
+        pin = ""; renderDots();
+      });
     } else {
       err.textContent = "That code doesn't match — try again";
       setTimeout(() => { pin = ""; renderDots(); }, 500);
@@ -980,9 +923,13 @@ function renderCardConfirm(card, p) {
     slot.innerHTML = "";
     renderCardActions(card, p);
   });
-  confirmBtn.addEventListener('click', (ev) => {
+  confirmBtn.addEventListener('click', async (ev) => {
     ev.stopPropagation();
     if (confirmBtn.disabled) return;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Deleting…";
+    const { error } = await sb.from('people').delete().eq('id', p.id);
+    if (error) { console.error(error); confirmBtn.textContent = "Failed — try again"; confirmBtn.disabled = false; return; }
     const idx = people.findIndex(x => x.id === p.id);
     if (idx > -1) people.splice(idx, 1);
     renderBoard();
@@ -994,7 +941,7 @@ function renderCardConfirm(card, p) {
 function renderQna(p) {
   const box = document.getElementById('profQna');
   box.innerHTML = p.qna.length ? "" : `<div class="sub">No questions from them yet</div>`;
-  p.qna.forEach((item, i) => {
+  p.qna.forEach((item) => {
     const c = document.createElement('div');
     c.className = 'qna-card';
     c.innerHTML = `<div class="qna-q"></div><div class="qna-a"></div><div class="qna-ts"></div>
@@ -1005,49 +952,84 @@ function renderQna(p) {
     c.querySelector('.qna-q').textContent = "They asked: " + item.q;
     c.querySelector('.qna-a').textContent = "I answered: " + item.a;
     c.querySelector('.qna-ts').textContent = "Posted " + (item.ts || "—");
-    c.querySelector('[data-act="edit"]').onclick = () => editQnaEntry(i);
-    c.querySelector('[data-act="delete"]').onclick = () => {
-      p.qna.splice(i, 1); renderQna(p);
-      document.getElementById('qnaCount').textContent = p.qna.length ? p.qna.length : "";
-      toast();
-    };
+    c.querySelector('[data-act="edit"]').onclick = () => editQnaEntry(item.id);
+    c.querySelector('[data-act="delete"]').onclick = () => deleteQnaEntry(p, item.id);
     box.appendChild(c);
   });
 }
-function saveQna() {
+async function saveQna() {
   const p = people.find(x => x.id === currentProfileId);
   if (!p) return;
   const q = document.getElementById('qnaQ').value.trim();
   const a = document.getElementById('qnaA').value.trim();
   if (!q || !a) return;
-  p.qna.unshift({ q, a, ts: nowStamp() });
+  const { data, error } = await sb.from('qna').insert({ person_id: p.id, question: q, answer: a }).select().single();
+  if (error) { console.error(error); return; }
+  p.qna.unshift(rowToQna(data));
   document.getElementById('qnaQ').value = "";
   document.getElementById('qnaA').value = "";
   renderQna(p);
   document.getElementById('qnaCount').textContent = p.qna.length ? p.qna.length : "";
   toast();
 }
-function editQnaEntry(i) {
-  const p = people.find(x => x.id === currentProfileId);
-  const item = p.qna[i];
-  document.getElementById('qnaQ').value = item.q;
-  document.getElementById('qnaA').value = item.a;
-  p.qna.splice(i, 1);
+async function deleteQnaEntry(p, id) {
+  const { error } = await sb.from('qna').delete().eq('id', id);
+  if (error) { console.error(error); return; }
+  p.qna = p.qna.filter(x => x.id !== id);
   renderQna(p);
   document.getElementById('qnaCount').textContent = p.qna.length ? p.qna.length : "";
+  toast();
+}
+async function editQnaEntry(id) {
+  const p = people.find(x => x.id === currentProfileId);
+  const item = p.qna.find(x => x.id === id);
+  if (!item) return;
+  document.getElementById('qnaQ').value = item.q;
+  document.getElementById('qnaA').value = item.a;
+  await deleteQnaEntry(p, id);
   document.getElementById('qnaQ').focus();
 }
-function openQna(id) {
+async function openQna(id) {
   const p = people.find(x => x.id === id);
   if (!p) return;
   currentProfileId = id;
   document.getElementById('qnaBackName').textContent = p.name;
+  if (!p._qnaLoaded) { p.qna = await loadQnaFor(p.id); p._qnaLoaded = true; }
   renderQna(p);
   showScreen('qna');
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
 }
 
-function openProfile(id) {
+const BIODATA_FIELD_MAP = {
+  fAge: { col: 'age', key: 'age' },
+  fDob: { col: 'dob', key: 'dob' },
+  fLocation: { col: 'location', key: 'location' },
+  fJob: { col: 'job', key: 'job' },
+  fFamily: { col: 'family', key: 'family' },
+  fJoined: { col: 'joined', key: 'joined' },
+  fTelegram: { col: 'telegram', key: 'telegram' },
+  fPhone: { col: 'phone', key: 'phone' },
+};
+function wireBiodataFields(p) {
+  Object.keys(BIODATA_FIELD_MAP).forEach(inputId => {
+    const { col, key } = BIODATA_FIELD_MAP[inputId];
+    const input = document.getElementById(inputId);
+    input.onblur = async () => {
+      const val = input.value.trim();
+      if (val === (p[key] || "")) return; // no change, skip write
+      const { error } = await sb.from('people').update({ [col]: val }).eq('id', p.id);
+      if (error) { console.error(error); return; }
+      p[key] = val;
+      if (key === 'location' || key === 'joined') {
+        document.getElementById('profMeta').textContent = `${p.location} · joined ${p.joined}`;
+      }
+      if (key === 'dob') { renderCalendar(); }
+      toast();
+    };
+  });
+}
+
+async function openProfile(id) {
   currentProfileId = id;
   const p = people.find(x => x.id === id);
   document.getElementById('profAvatar').textContent = p.name[0];
@@ -1061,13 +1043,15 @@ function openProfile(id) {
   document.getElementById('fJoined').value = p.joined;
   document.getElementById('fTelegram').value = p.telegram || "";
   document.getElementById('fPhone').value = p.phone || "";
+  wireBiodataFields(p);
   renderNotes(p);
   document.getElementById('profNextStep').innerHTML = p.nextStep
     ? `<div class="todo-item${p.nextStepDone ? ' done-text' : ''}" id="profNextStepRow"><div class="todo-check${p.nextStepDone ? ' done' : ''}" id="profNextStepCheck"></div>${p.nextStep}</div>`
     : `<div class="sub">No next step set</div>`;
   if (p.nextStep) {
-    document.getElementById('profNextStepCheck').onclick = () => {
+    document.getElementById('profNextStepCheck').onclick = async () => {
       p.nextStepDone = !p.nextStepDone;
+      await sb.from('people').update({ next_step_done: p.nextStepDone }).eq('id', p.id);
       openProfile(id);
     };
   }
@@ -1078,12 +1062,19 @@ function openProfile(id) {
     const b = document.createElement('button');
     b.className = `status-btn ${s}` + (p.status === s ? ' on' : '');
     b.textContent = statusLabel(s);
-    b.onclick = () => { p.status = s; openProfile(id); toast(); };
+    b.onclick = async () => {
+      p.status = s;
+      await sb.from('people').update({ status: s }).eq('id', p.id);
+      openProfile(id);
+      renderBoard();
+      toast();
+    };
     sw.appendChild(b);
   });
 
-  document.getElementById('qnaCount').textContent = p.qna.length ? p.qna.length : "";
+  document.getElementById('qnaCount').textContent = p._qnaLoaded ? (p.qna.length ? p.qna.length : "") : "";
 
+  if (!p._logLoaded) { p.log = await loadLogFor(p.id); p._logLoaded = true; }
   renderLog(p);
 
   showScreen('profile');
@@ -1109,10 +1100,14 @@ function editNotes() {
   document.getElementById('notesSaveBtn').style.display = 'inline-block';
   document.getElementById('notesCancelBtn').style.display = 'inline-block';
 }
-function saveNotes() {
+async function saveNotes() {
   const p = people.find(x => x.id === currentProfileId);
-  p.notes = document.getElementById('profNotesEdit').value.trim();
-  p.notesUpdated = nowStamp();
+  const notes = document.getElementById('profNotesEdit').value.trim();
+  const nowIso = new Date().toISOString();
+  const { error } = await sb.from('people').update({ notes, notes_updated: nowIso }).eq('id', p.id);
+  if (error) { console.error(error); return; }
+  p.notes = notes;
+  p.notesUpdated = formatTs(nowIso);
   renderNotes(p);
   toast();
 }
@@ -1125,7 +1120,7 @@ function cancelNotes() {
 function renderLog(p) {
   const log = document.getElementById('profLog');
   log.innerHTML = p.log.length ? "" : `<div class="sub">No meetings logged yet</div>`;
-  p.log.forEach((entry, i) => {
+  p.log.forEach((entry) => {
     const e = document.createElement('div');
     e.className = 'log-entry';
     e.innerHTML = `<div class="log-date">${entry.date}</div><div class="log-text"></div>
@@ -1136,94 +1131,155 @@ function renderLog(p) {
         <button class="mini-btn danger" data-act="delete">🗑 Delete</button>
       </div>`;
     e.querySelector('.log-text').textContent = entry.text;
-    e.querySelector('[data-act="edit"]').onclick = () => editLogEntry(i);
-    e.querySelector('[data-act="delete"]').onclick = () => { p.log.splice(i, 1); renderLog(p); toast(); };
+    e.querySelector('[data-act="edit"]').onclick = () => editLogEntry(entry.id);
+    e.querySelector('[data-act="delete"]').onclick = () => deleteLogEntry(p, entry.id);
     log.appendChild(e);
   });
 }
-function saveLog() {
+async function saveLog() {
   const p = people.find(x => x.id === currentProfileId);
   if (!p) return;
   const text = document.getElementById('logInput').value.trim();
   const next = document.getElementById('logNextInput').value.trim();
   if (!text) return;
   const stamp = nowStamp();
-  p.log.unshift({ date: stamp.split(' · ')[0], text, next: next || null, ts: stamp });
+  const entryDate = stamp.split(' · ')[0];
+  const { data, error } = await sb.from('meeting_log').insert({
+    person_id: p.id, entry_date: entryDate, entry_text: text, next_step: next || null
+  }).select().single();
+  if (error) { console.error(error); return; }
+  p.log.unshift(rowToLog(data));
   document.getElementById('logInput').value = "";
   document.getElementById('logNextInput').value = "";
   renderLog(p);
+  await loadAllLogs();
   toast();
 }
-function editLogEntry(i) {
+async function deleteLogEntry(p, id) {
+  const { error } = await sb.from('meeting_log').delete().eq('id', id);
+  if (error) { console.error(error); return; }
+  p.log = p.log.filter(x => x.id !== id);
+  renderLog(p);
+  await loadAllLogs();
+  toast();
+}
+async function editLogEntry(id) {
   const p = people.find(x => x.id === currentProfileId);
-  const entry = p.log[i];
+  const entry = p.log.find(x => x.id === id);
+  if (!entry) return;
   document.getElementById('logInput').value = entry.text;
   document.getElementById('logNextInput').value = entry.next || "";
-  p.log.splice(i, 1);
-  renderLog(p);
+  await deleteLogEntry(p, id);
   document.getElementById('logInput').focus();
 }
 
+// ---- Calendar (dynamic, backed by meeting_log + people.dob) ----
+let calendarMonthOffset = 0;
+let allLogs = []; // { personId, day, month, year } for every logged meeting, across everyone
 
-// ---- Calendar (mock: September 2026) ----
-const contactDays = {}; // day -> person ids — empty until you start logging meetings
-const birthdays = {}; // day -> name — add once you know their birthdays
+async function loadAllLogs() {
+  const { data, error } = await sb.from('meeting_log').select('person_id, created_at');
+  if (error) { console.error(error); allLogs = []; return; }
+  allLogs = (data || []).map(row => {
+    const d = new Date(row.created_at);
+    return { personId: row.person_id, day: d.getDate(), month: d.getMonth(), year: d.getFullYear() };
+  });
+}
+
+function parseBirthday(dobStr) {
+  if (!dobStr) return null;
+  const d = new Date(dobStr);
+  if (isNaN(d.getTime())) return null;
+  return { day: d.getDate(), month: d.getMonth() };
+}
+
+function changeMonth(delta) {
+  calendarMonthOffset += delta;
+  renderCalendar();
+  document.getElementById('dayDetail').style.display = 'none';
+}
+
 function renderCalendar() {
+  const base = new Date();
+  base.setDate(1);
+  base.setMonth(base.getMonth() + calendarMonthOffset);
+  const year = base.getFullYear();
+  const month = base.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startWeekday = new Date(year, month, 1).getDay();
+
+  document.getElementById('calMonthTitle').textContent = base.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
   const grid = document.getElementById('calGrid');
   grid.innerHTML = "";
   ["S","M","T","W","T","F","S"].forEach(d => {
     const el = document.createElement('div'); el.className = 'cal-dow'; el.textContent = d; grid.appendChild(el);
   });
-  const startOffset = 2; // Sept 1 2026 is a Tuesday
-  for (let i = 0; i < startOffset; i++) {
+  for (let i = 0; i < startWeekday; i++) {
     const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
   }
-  for (let day = 1; day <= 30; day++) {
+  for (let day = 1; day <= daysInMonth; day++) {
     const el = document.createElement('div');
     el.className = 'cal-day';
-    if (contactDays[day]) el.classList.add('has-contact');
-    if (birthdays[day]) el.classList.add('birthday');
+    const hasContact = allLogs.some(l => l.day === day && l.month === month && l.year === year);
+    const hasBirthday = people.some(p => { const b = parseBirthday(p.dob); return b && b.day === day && b.month === month; });
+    if (hasContact) el.classList.add('has-contact');
+    if (hasBirthday) el.classList.add('birthday');
     el.textContent = day;
-    el.onclick = () => showDayDetail(day);
+    el.onclick = () => showDayDetail(day, month, year);
     grid.appendChild(el);
   }
 }
-function showDayDetail(day) {
+
+function showDayDetail(day, month, year) {
   const dd = document.getElementById('dayDetail');
-  const ids = contactDays[day] || [];
-  const bday = birthdays[day];
-  if (!ids.length && !bday) { dd.style.display = 'none'; return; }
+  const contactPeopleIds = [...new Set(allLogs.filter(l => l.day === day && l.month === month && l.year === year).map(l => l.personId))];
+  const birthdayPeople = people.filter(p => { const b = parseBirthday(p.dob); return b && b.day === day && b.month === month; });
+  if (!contactPeopleIds.length && !birthdayPeople.length) { dd.style.display = 'none'; return; }
   dd.style.display = 'block';
-  document.getElementById('dayDetailTitle').textContent = `September ${day}`;
+  const monthName = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long' });
+  document.getElementById('dayDetailTitle').textContent = `${monthName} ${day}`;
   const list = document.getElementById('dayDetailList');
   list.innerHTML = "";
-  ids.forEach(id => {
+  contactPeopleIds.forEach(id => {
     const p = people.find(x => x.id === id);
+    if (!p) return;
     const el = document.createElement('div');
     el.className = 'dd-person';
     el.innerHTML = `<span class="dot ${p.status}"></span> Talked with ${p.name} →`;
     el.onclick = () => openProfile(id);
     list.appendChild(el);
   });
-  if (bday) {
+  birthdayPeople.forEach(p => {
     const el = document.createElement('div');
     el.className = 'dd-person';
-    el.innerHTML = `✦ ${bday}'s birthday`;
+    el.innerHTML = `✦ ${p.name}'s birthday →`;
+    el.onclick = () => openProfile(p.id);
     list.appendChild(el);
-  }
+  });
 }
 
 // ---- Todos ----
 function renderTodos() {
   const mine = document.getElementById('myTodos');
   mine.innerHTML = "";
-  myTodos.forEach((t, i) => {
+  myTodos.forEach((t) => {
     const el = document.createElement('div');
     el.className = 'todo-item' + (t.done ? ' done-text' : '');
     el.innerHTML = `<div class="todo-check${t.done ? ' done' : ''}"></div><div style="flex:1;">${t.text}</div>
       <button class="mini-btn danger" style="margin-left:6px;">🗑</button>`;
-    el.querySelector('.todo-check').onclick = (ev) => { ev.stopPropagation(); t.done = !t.done; renderTodos(); };
-    el.querySelector('.mini-btn').onclick = (ev) => { ev.stopPropagation(); myTodos.splice(i, 1); renderTodos(); };
+    el.querySelector('.todo-check').onclick = async (ev) => {
+      ev.stopPropagation();
+      t.done = !t.done;
+      await sb.from('todos').update({ done: t.done }).eq('id', t.id);
+      renderTodos();
+    };
+    el.querySelector('.mini-btn').onclick = async (ev) => {
+      ev.stopPropagation();
+      await sb.from('todos').delete().eq('id', t.id);
+      myTodos = myTodos.filter(x => x.id !== t.id);
+      renderTodos();
+    };
     mine.appendChild(el);
   });
 
@@ -1235,25 +1291,39 @@ function renderTodos() {
     el.style.cursor = 'pointer';
     el.innerHTML = `<div class="todo-check${p.nextStepDone ? ' done' : ''}"></div><div style="flex:1;">${p.nextStep}</div><div class="todo-owner">${p.name}</div>
       <button class="mini-btn danger" style="margin-left:6px;">🗑</button>`;
-    el.querySelector('.todo-check').addEventListener('click', (ev) => {
+    el.querySelector('.todo-check').addEventListener('click', async (ev) => {
       ev.stopPropagation();
       p.nextStepDone = !p.nextStepDone;
+      await sb.from('people').update({ next_step_done: p.nextStepDone }).eq('id', p.id);
       renderTodos();
     });
     el.addEventListener('click', () => openProfile(p.id));
-    el.querySelector('.mini-btn').addEventListener('click', (ev) => {
+    el.querySelector('.mini-btn').addEventListener('click', async (ev) => {
       ev.stopPropagation();
       p.nextStep = "";
       p.nextStepDone = false;
+      await sb.from('people').update({ next_step: "", next_step_done: false }).eq('id', p.id);
       renderTodos();
       toast();
     });
     perPerson.appendChild(el);
   });
 }
+async function saveTodo() {
+  const input = document.getElementById('todoInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const { data, error } = await sb.from('todos').insert({ text_content: text }).select().single();
+  if (error) { console.error(error); return; }
+  myTodos.push(rowToTodo(data));
+  input.value = "";
+  renderTodos();
+  toast();
+}
 
-function init() {
+async function init() {
   document.getElementById('dateLine').textContent = "Thursday, September 3";
+  await Promise.all([loadPeople(), loadJournal(), loadTodos(), loadAllLogs()]);
   renderBoard();
   renderCalendar();
   renderTodos();
@@ -1264,7 +1334,7 @@ function init() {
 function renderJournal() {
   const list = document.getElementById('journalList');
   list.innerHTML = "";
-  journalEntries.forEach((e, i) => {
+  journalEntries.forEach((e) => {
     const el = document.createElement('div');
     el.className = 'journal-entry';
     el.innerHTML = `<div class="journal-date">${e.date}</div><div class="journal-text"></div>
@@ -1273,25 +1343,35 @@ function renderJournal() {
         <button class="mini-btn danger" data-act="delete">🗑 Delete</button>
       </div>`;
     el.querySelector('.journal-text').textContent = e.text;
-    el.querySelector('[data-act="edit"]').onclick = () => editJournalEntry(i);
-    el.querySelector('[data-act="delete"]').onclick = () => { journalEntries.splice(i, 1); renderJournal(); toast(); };
+    el.querySelector('[data-act="edit"]').onclick = () => editJournalEntry(e.id);
+    el.querySelector('[data-act="delete"]').onclick = () => deleteJournalEntry(e.id);
     list.appendChild(el);
   });
 }
-function saveJournal() {
+async function saveJournal() {
   const input = document.getElementById('journalInput');
   const text = input.value.trim();
   if (!text) return;
-  journalEntries.unshift({ date: nowStamp(), text });
+  const { data, error } = await sb.from('journal_entries').insert({ entry_text: text }).select().single();
+  if (error) { console.error(error); return; }
+  journalEntries.unshift(rowToJournal(data));
   input.value = "";
   renderJournal();
   playChime();
   toast();
 }
-function editJournalEntry(i) {
-  document.getElementById('journalInput').value = journalEntries[i].text;
-  journalEntries.splice(i, 1);
+async function deleteJournalEntry(id) {
+  const { error } = await sb.from('journal_entries').delete().eq('id', id);
+  if (error) { console.error(error); return; }
+  journalEntries = journalEntries.filter(x => x.id !== id);
   renderJournal();
+  toast();
+}
+async function editJournalEntry(id) {
+  const e = journalEntries.find(x => x.id === id);
+  if (!e) return;
+  document.getElementById('journalInput').value = e.text;
+  await deleteJournalEntry(id);
   document.getElementById('journalInput').focus();
 }
 </script>
