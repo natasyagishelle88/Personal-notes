@@ -1,0 +1,1209 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Karla:wght@400;500;600;700&display=swap');
+
+:root {
+  --linen: #FFFFFF;
+  --linen-card: #FFFFFF;
+  --ink: #33302B;
+  --ink-soft: #726B60;
+  --line: #ECE7E0;
+  --accent-soft: #EDEAE3;
+  --accent: #B3A88F;
+  --accent-line: #DDD6C8;
+
+  --dusk: #232026;
+  --dusk-card: #2C2831;
+  --fog: #E8E2D8;
+  --fog-soft: #A69C8D;
+  --dusk-line: #3D3844;
+
+  --cold: #7C9CB8;
+  --cold-soft: #DCE6ED;
+  --cold-dusk: #6E8FAC;
+
+  --warm: #D6A24A;
+  --warm-soft: #F3E4C4;
+  --warm-dusk: #C99B48;
+
+  --hot: #C97B72;
+  --hot-soft: #F1DAD5;
+  --hot-dusk: #C17868;
+
+  --black-status: #6B5D52;
+  --black-soft: #E4DACD;
+  --black-dusk: #7A6C5E;
+
+  --green: #7E9B72;
+  --green-soft: #DDE7D5;
+
+  --radius: 14px;
+}
+
+body.theme-default { --accent-soft: #EDEAE3; --accent: #B3A88F; --accent-line: #DDD6C8; }
+body.theme-blossom { --accent-soft: #FBE9EF; --accent: #E3A9BB; --accent-line: #F3D3DF; }
+body.theme-grove   { --accent-soft: #E8F0E1; --accent: #9CB989; --accent-line: #D9E7CE; }
+body.theme-sky     { --accent-soft: #E3EDF4; --accent: #7FA8C9; --accent-line: #CFE0EB; }
+body.theme-honey   { --accent-soft: #FAF0DA; --accent: #E0B565; --accent-line: #F0DFB8; }
+body.theme-clay    { --accent-soft: #EFE3D8; --accent: #B08862; --accent-line: #E3D0BE; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  background: var(--accent-soft);
+  min-height: 100%;
+  color-scheme: light;
+}
+html.dark { background: var(--dusk); color-scheme: dark; }
+
+body {
+  font-family: 'Karla', sans-serif;
+  background: var(--accent-soft);
+  color: var(--ink);
+  transition: background .35s ease, color .35s ease;
+  min-height: 100vh;
+}
+
+body.dark {
+  background: var(--dusk);
+  color: var(--fog);
+}
+
+h1, h2, h3, .display {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 40px; background: var(--accent-soft); }
+body.dark .app { background: var(--dusk); }
+
+/* ---- Lock screen ---- */
+.lock-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  gap: 22px;
+}
+.lock-mark {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+body.dark .lock-mark { background: #3A4636; }
+
+.theme-toggle {
+  position: absolute; top: 20px; right: 20px;
+}
+.lock-screen h1 { font-size: 26px; }
+
+.pin-dots { display: flex; gap: 14px; margin: 8px 0; }
+.pin-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 1.5px solid var(--ink-soft);
+  transition: all .2s ease;
+}
+.pin-dot.filled { background: var(--green); border-color: var(--green); }
+body.dark .pin-dot { border-color: var(--fog-soft); }
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  gap: 14px;
+}
+.key {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: var(--linen-card);
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+body.dark .key { background: var(--dusk-card); color: var(--fog); }
+.key:active { transform: scale(0.94); }
+.key.ghost { background: transparent; box-shadow: none; }
+
+.lock-error { color: var(--hot); font-size: 13px; height: 16px; }
+
+/* ---- Top bar ---- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 20px 14px;
+}
+.topbar .greeting { font-size: 22px; }
+.topbar .sub { color: var(--ink-soft); font-size: 13px; margin-top: 2px; }
+body.dark .sub { color: var(--fog-soft); }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--linen-card);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px;
+}
+body.dark .icon-btn { background: var(--dusk-card); border-color: var(--dusk-line); }
+
+/* ---- Nav ---- */
+.tabbar {
+  display: flex; gap: 6px;
+  padding: 0 20px 18px;
+  overflow-x: auto;
+}
+.tab {
+  padding: 8px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab.active { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+body.dark .tab { border-color: var(--dusk-line); color: var(--fog-soft); }
+body.dark .tab.active { background: var(--fog); color: var(--dusk); }
+
+.screen { padding: 0 20px; display: none; }
+.screen.active { display: block; }
+
+/* ---- Status columns ---- */
+.status-board { display: flex; flex-direction: column; gap: 18px; margin-top: 4px; }
+.status-group-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--ink-soft); margin-bottom: 8px;
+}
+body.dark .status-group-label { color: var(--fog-soft); }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.cold { background: var(--cold); }
+.dot.warm { background: var(--warm); }
+.dot.hot { background: var(--hot); }
+.dot.black { background: var(--black-status); }
+
+.person-card {
+  background: var(--linen-card);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+}
+body.dark .person-card { background: var(--dusk-card); border-color: var(--dusk-line); }
+.person-card .name { font-family: 'Fraunces', serif; font-size: 16px; }
+.person-card .meta { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+body.dark .person-card .meta { color: var(--fog-soft); }
+.status-pill {
+  font-size: 11px; padding: 4px 10px; border-radius: 100px;
+  font-weight: 600;
+}
+.status-pill.cold { background: var(--cold-soft); color: var(--cold-dusk); }
+.status-pill.warm { background: var(--warm-soft); color: var(--warm-dusk); }
+.status-pill.hot { background: var(--hot-soft); color: var(--hot-dusk); }
+.status-pill.black { background: var(--black-soft); color: var(--black-dusk); }
+body.dark .status-pill.cold { background: rgba(124,156,184,0.25); }
+body.dark .status-pill.warm { background: rgba(214,162,74,0.25); }
+body.dark .status-pill.hot { background: rgba(201,123,114,0.25); }
+body.dark .status-pill.black { background: rgba(107,93,82,0.3); }
+
+/* ---- Profile ---- */
+.profile-header { display: flex; align-items: center; gap: 14px; margin: 6px 0 20px; }
+.avatar {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--accent-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif; font-size: 20px; color: var(--ink);
+}
+.back-link {
+  font-size: 13px; color: var(--ink-soft); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px; margin-bottom: 14px;
+}
+body.dark .back-link { color: var(--fog-soft); }
+
+.status-switch { display: flex; gap: 6px; margin: 14px 0 20px; }
+.status-btn {
+  flex: 1; padding: 9px 0; border-radius: 10px; font-size: 12px;
+  border: 1.5px solid var(--line); background: transparent; color: var(--ink-soft);
+  cursor: pointer; font-weight: 600;
+}
+body.dark .status-btn { border-color: var(--dusk-line); color: var(--fog-soft); }
+.status-btn.cold.on { background: var(--cold-soft); border-color: var(--cold); color: var(--cold-dusk); }
+.status-btn.warm.on { background: var(--warm-soft); border-color: var(--warm); color: var(--warm-dusk); }
+.status-btn.hot.on { background: var(--hot-soft); border-color: var(--hot); color: var(--hot-dusk); }
+.status-btn.black.on { background: var(--black-soft); border-color: var(--black-status); color: var(--black-dusk); }
+
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.field { background: var(--linen-card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+body.dark .field { background: var(--dusk-card); border-color: var(--dusk-line); }
+.field label { font-size: 10px; text-transform: none; color: var(--ink-soft); display: block; margin-bottom: 3px; }
+body.dark .field label { color: var(--fog-soft); }
+.field input, .field textarea {
+  width: 100%; border: none; background: transparent; font-family: 'Karla', sans-serif;
+  font-size: 14px; color: var(--ink); resize: none;
+}
+body.dark .field input, body.dark .field textarea { color: var(--fog); }
+.field.full { grid-column: 1 / -1; }
+.field input:focus, .field textarea:focus { outline: none; }
+
+.section-title { font-size: 13px; font-weight: 700; margin: 22px 0 10px; }
+
+.note-block { background: var(--warm-soft); border-radius: var(--radius); padding: 14px; font-size: 13px; line-height: 1.55; color: var(--warm-dusk); margin-bottom: 20px; }
+body.dark .note-block { background: rgba(214,162,74,0.14); color: var(--warm); }
+
+.link-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--linen-card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; margin: 18px 0; cursor: pointer; font-size: 13.5px;
+}
+body.dark .link-row { background: var(--dusk-card); border-color: var(--dusk-line); }
+.link-row-count { font-size: 12px; color: var(--ink-soft); margin-left: auto; }
+body.dark .link-row-count { color: var(--fog-soft); }
+.link-row-arrow { color: var(--ink-soft); }
+body.dark .link-row-arrow { color: var(--fog-soft); }
+
+.note-meta { font-size: 11px; color: var(--ink-soft); margin-top: 6px; }
+body.dark .note-meta { color: var(--fog-soft); }
+.note-edit {
+  width: 100%; min-height: 90px; margin-top: 8px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--linen-card); padding: 12px; font-family: 'Karla', sans-serif; font-size: 13px; color: var(--ink); resize: vertical;
+}
+body.dark .note-edit { background: var(--dusk-card); border-color: var(--dusk-line); color: var(--fog); }
+.note-actions { display: flex; gap: 8px; margin-top: 8px; }
+.mini-btn {
+  font-size: 11.5px; padding: 6px 12px; border-radius: 100px; border: 1px solid var(--line);
+  background: var(--linen-card); color: var(--ink-soft); cursor: pointer;
+}
+body.dark .mini-btn { background: var(--dusk-card); border-color: var(--dusk-line); color: var(--fog-soft); }
+.mini-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+.mini-btn.danger { color: var(--hot-dusk); }
+.entry-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.entry-meta .mini-btn { padding: 4px 10px; font-size: 11px; }
+
+.qna-card {
+  background: var(--linen-card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 13px 15px; margin-bottom: 8px;
+}
+body.dark .qna-card { background: var(--dusk-card); border-color: var(--dusk-line); }
+.qna-q { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 4px; }
+body.dark .qna-q { color: var(--fog-soft); }
+.qna-a { font-size: 13.5px; line-height: 1.5; }
+.qna-ts { font-size: 10.5px; color: var(--ink-soft); margin-top: 6px; }
+body.dark .qna-ts { color: var(--fog-soft); }
+
+.log-entry { border-left: 2px solid var(--line); padding: 2px 0 14px 14px; margin-left: 4px; position: relative; }
+body.dark .log-entry { border-color: var(--dusk-line); }
+.log-entry::before { content: ''; position: absolute; left: -5px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.log-date { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+body.dark .log-date { color: var(--fog-soft); }
+.log-text { font-size: 13.5px; margin: 4px 0 6px; line-height: 1.5; }
+.log-next { font-size: 12px; background: var(--cold-soft); color: var(--cold-dusk); display: inline-block; padding: 4px 10px; border-radius: 100px; }
+body.dark .log-next { background: rgba(124,156,184,0.2); color: var(--cold); }
+
+/* ---- Calendar ---- */
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 10px 0 24px; }
+.cal-dow { font-size: 10px; text-align: center; color: var(--ink-soft); padding-bottom: 4px; }
+body.dark .cal-dow { color: var(--fog-soft); }
+.cal-day {
+  aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; background: var(--linen-card); border: 1px solid var(--line); cursor: pointer; position: relative;
+  color: var(--ink);
+}
+body.dark .cal-day { background: var(--dusk-card); border-color: var(--dusk-line); color: var(--fog); }
+.cal-day.empty { background: transparent; border: none; cursor: default; }
+.cal-day.has-contact { background: var(--green-soft); border-color: var(--green); font-weight: 700; }
+body.dark .cal-day.has-contact { background: rgba(126,155,114,0.25); }
+.cal-day.birthday::after {
+  content: '✦'; position: absolute; top: -4px; right: -2px; font-size: 9px; color: var(--hot);
+}
+
+.day-detail { background: var(--linen-card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 20px; }
+body.dark .day-detail { background: var(--dusk-card); border-color: var(--dusk-line); }
+.day-detail .dd-title { font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; }
+body.dark .day-detail .dd-title { color: var(--fog-soft); }
+.dd-person { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13.5px; cursor: pointer; }
+
+/* ---- Todo ---- */
+.todo-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.todo-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--linen-card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 11px 14px; margin-bottom: 8px; font-size: 13.5px;
+}
+body.dark .todo-item { background: var(--dusk-card); border-color: var(--dusk-line); }
+.todo-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ink-soft); flex-shrink: 0; cursor: pointer; }
+body.dark .todo-check { border-color: var(--fog-soft); }
+.todo-check.done { background: var(--green); border-color: var(--green); }
+.todo-item.done-text { color: var(--ink-soft); text-decoration: line-through; }
+.todo-owner { font-size: 11px; color: var(--ink-soft); margin-left: auto; flex-shrink: 0; }
+body.dark .todo-owner { color: var(--fog-soft); }
+
+.chime-toast {
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--ink); font-size: 12px;
+  padding: 8px 16px; border-radius: 100px; opacity: 0; transition: opacity .3s ease;
+  pointer-events: none;
+}
+.chime-toast.show { opacity: 1; }
+
+/* ---- Appearance sheet ---- */
+.sheet-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  display: none; align-items: flex-end; justify-content: center; z-index: 50;
+}
+.sheet-backdrop.show { display: flex; }
+.sheet {
+  background: var(--linen); width: 100%; max-width: 480px;
+  border-radius: 22px 22px 0 0; padding: 10px 22px 28px;
+  max-height: 80vh; overflow-y: auto;
+}
+body.dark .sheet { background: var(--dusk); }
+.sheet-handle { width: 36px; height: 4px; background: var(--line); border-radius: 4px; margin: 8px auto 18px; }
+body.dark .sheet-handle { background: var(--dusk-line); }
+.sheet h2 { font-size: 20px; margin-bottom: 18px; }
+.sheet .section-title { margin-top: 18px; }
+
+.segmented { display: flex; gap: 8px; }
+.segmented button {
+  flex: 1; padding: 12px 0; border-radius: 12px; font-size: 14px;
+  border: 1.5px solid var(--line); background: transparent; color: var(--ink-soft); cursor: pointer;
+}
+body.dark .segmented button { border-color: var(--dusk-line); color: var(--fog-soft); }
+.segmented button.on { border-color: var(--accent); color: var(--ink); background: var(--accent-soft); font-weight: 600; }
+body.dark .segmented button.on { border-color: var(--fog); color: var(--fog); }
+
+.ambiance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 8px; margin-top: 10px; }
+.ambiance-item { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; }
+.ambiance-swatch {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 2px solid transparent;
+}
+.ambiance-item.on .ambiance-swatch { border-color: var(--ink-soft); }
+body.dark .ambiance-item.on .ambiance-swatch { border-color: var(--fog); }
+.ambiance-item span { font-size: 11px; color: var(--ink-soft); }
+body.dark .ambiance-item span { color: var(--fog-soft); }
+.sw-default { background: #B3A88F; }
+.sw-blossom { background: #E3A9BB; }
+.sw-grove { background: #9CB989; }
+.sw-sky { background: #7FA8C9; }
+.sw-honey { background: #E0B565; }
+.sw-clay { background: #B08862; }
+
+.sheet-done {
+  width: 100%; padding: 13px 0; border-radius: 12px; border: none;
+  background: var(--accent); color: var(--ink); font-size: 14px; font-weight: 600;
+  margin-top: 22px; cursor: pointer;
+}
+body.dark .sheet-done { background: var(--fog); color: var(--dusk); }
+
+/* ---- Download buttons ---- */
+.dl-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: var(--ink-soft);
+  border: 1px solid var(--line); border-radius: 100px;
+  padding: 7px 13px; background: var(--linen-card); cursor: pointer;
+}
+body.dark .dl-btn { border-color: var(--dusk-line); color: var(--fog-soft); background: var(--dusk-card); }
+.board-header { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 14px; }
+.board-header .section-title { margin: 0; }
+
+/* ---- Journal ---- */
+.journal-entry {
+  background: var(--linen-card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+}
+body.dark .journal-entry { background: var(--dusk-card); border-color: var(--dusk-line); }
+.journal-date { font-size: 11px; color: var(--ink-soft); font-weight: 600; margin-bottom: 4px; }
+body.dark .journal-date { color: var(--fog-soft); }
+.journal-text { font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; }
+.journal-compose {
+  background: var(--accent-soft); border-radius: var(--radius); padding: 14px; margin-bottom: 18px;
+}
+.journal-compose textarea {
+  width: 100%; min-height: 80px; border: none; background: transparent; resize: vertical;
+  font-family: 'Karla', sans-serif; font-size: 13.5px; color: var(--ink); line-height: 1.5;
+}
+.journal-compose textarea:focus { outline: none; }
+.journal-save {
+  border: none; background: var(--accent); color: var(--ink); font-size: 12.5px;
+  padding: 8px 16px; border-radius: 100px; cursor: pointer; margin-top: 8px;
+}
+body.dark .journal-save { background: var(--fog); color: var(--dusk); }
+</style>
+
+<div class="app" id="app">
+
+  <!-- LOCK SCREEN -->
+  <div class="lock-screen" id="lockScreen">
+    <div class="lock-mark">🕊️</div>
+    <h1>Personal Notes</h1>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div class="lock-error" id="lockError"></div>
+    <div class="keypad" id="keypad"></div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp" style="display:none;">
+    <div class="topbar">
+      <div>
+        <div class="greeting display">Hi, Gisel</div>
+        <div class="sub" id="dateLine"></div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="icon-btn" onclick="openSheet()" id="themeToggle" title="Appearance">🎨</button>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <button class="tab active" data-screen="board" onclick="showScreen('board')">Group</button>
+      <button class="tab" data-screen="calendar" onclick="showScreen('calendar')">Calendar</button>
+      <button class="tab" data-screen="todos" onclick="showScreen('todos')">To-do</button>
+      <button class="tab" data-screen="journal" onclick="showScreen('journal')">Journal</button>
+    </div>
+
+    <!-- BOARD SCREEN -->
+    <div class="screen active" id="screen-board">
+      <div class="board-header">
+        <div class="section-title" style="margin:0;">Your group</div>
+        <button class="dl-btn" onclick="downloadAll()">⬇ Download all</button>
+      </div>
+      <div class="status-board" id="statusBoard"></div>
+    </div>
+
+    <!-- PROFILE SCREEN -->
+    <div class="screen" id="screen-profile">
+      <div class="back-link" onclick="showScreen('board')">← Back to group</div>
+      <div class="profile-header">
+        <div class="avatar" id="profAvatar">A</div>
+        <div>
+          <h2 id="profName">—</h2>
+          <div class="sub" id="profMeta">—</div>
+        </div>
+      </div>
+
+      <div class="status-switch" id="profStatusSwitch"></div>
+
+      <div class="field-grid">
+        <div class="field"><label>Age</label><input id="fAge" placeholder="—"></div>
+        <div class="field"><label>Date of birth</label><input id="fDob" placeholder="—"></div>
+        <div class="field"><label>Location</label><input id="fLocation" placeholder="—"></div>
+        <div class="field"><label>Occupation</label><input id="fJob" placeholder="—"></div>
+        <div class="field full"><label>Family</label><input id="fFamily" placeholder="—"></div>
+        <div class="field full"><label>Date joined church</label><input id="fJoined" placeholder="—"></div>
+        <div class="field full"><label>Telegram</label><input id="fTelegram" placeholder="—"></div>
+        <div class="field full"><label>Phone number</label><input id="fPhone" placeholder="Add later"></div>
+      </div>
+
+      <div class="section-title">My notes on them</div>
+      <div class="note-block" id="profNotes">—</div>
+      <div class="note-meta" id="profNotesMeta"></div>
+      <textarea class="note-edit" id="profNotesEdit" style="display:none;"></textarea>
+      <div class="note-actions" id="profNotesActions">
+        <button class="mini-btn" onclick="editNotes()" id="notesEditBtn">✎ Edit</button>
+        <button class="mini-btn primary" onclick="saveNotes()" id="notesSaveBtn" style="display:none;">Save</button>
+        <button class="mini-btn" onclick="cancelNotes()" id="notesCancelBtn" style="display:none;">Cancel</button>
+      </div>
+
+      <div class="section-title">Next step</div>
+      <div id="profNextStep"></div>
+
+      <div class="link-row" onclick="openQna(currentProfileId)">
+        <span>Questions they've asked me</span>
+        <span class="link-row-count" id="qnaCount"></span>
+        <span class="link-row-arrow">→</span>
+      </div>
+
+      <div class="section-title">Meeting log</div>
+      <div class="journal-compose">
+        <textarea id="logInput" placeholder="What did you talk about?"></textarea>
+        <input id="logNextInput" placeholder="Next step (optional)" style="width:100%; border:none; background:transparent; font-family:'Karla',sans-serif; font-size:13px; color:var(--ink); margin-top:8px;">
+        <button class="journal-save" onclick="saveLog()">Add entry</button>
+      </div>
+      <div id="profLog"></div>
+
+      <button class="dl-btn" style="margin-top:18px;" onclick="downloadPerson()">⬇ Download this profile</button>
+    </div>
+
+    <!-- QNA SCREEN -->
+    <div class="screen" id="screen-qna">
+      <div class="back-link" onclick="openProfile(currentProfileId)">← Back to <span id="qnaBackName"></span></div>
+      <div class="section-title" style="margin-top:0;">Questions they've asked me</div>
+      <div class="journal-compose">
+        <input id="qnaQ" placeholder="What did they ask?" style="width:100%; border:none; background:transparent; font-family:'Karla',sans-serif; font-size:13.5px; color:var(--ink); margin-bottom:8px;">
+        <textarea id="qnaA" placeholder="What did I answer?" style="min-height:56px;"></textarea>
+        <button class="journal-save" onclick="saveQna()">Save</button>
+      </div>
+      <div id="profQna"></div>
+    </div>
+
+    <!-- CALENDAR SCREEN -->
+    <div class="screen" id="screen-calendar">
+      <div class="section-title" style="margin-top:6px;">September</div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="day-detail" id="dayDetail" style="display:none;">
+        <div class="dd-title" id="dayDetailTitle">—</div>
+        <div id="dayDetailList"></div>
+      </div>
+    </div>
+
+    <!-- TODOS SCREEN -->
+    <div class="screen" id="screen-todos">
+      <div class="section-title" style="margin-top:6px;">My to-do list</div>
+      <div id="myTodos"></div>
+      <div class="section-title">Next steps by person</div>
+      <div id="personTodos"></div>
+    </div>
+
+    <!-- JOURNAL SCREEN -->
+    <div class="screen" id="screen-journal">
+      <div class="section-title" style="margin-top:6px;">Just for you</div>
+      <div class="journal-compose">
+        <textarea id="journalInput" placeholder="Write whatever's on your mind — no one else sees this."></textarea>
+        <button class="journal-save" onclick="saveJournal()">Save entry</button>
+      </div>
+      <div id="journalList"></div>
+    </div>
+
+  </div>
+
+  <div class="chime-toast" id="chimeToast">Saved ✦</div>
+
+  <!-- APPEARANCE SHEET -->
+  <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheetOutside(event)">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h2>Appearance</h2>
+
+      <div class="section-title" style="margin-top:0;">Mode</div>
+      <div class="segmented">
+        <button id="modeLight" onclick="setDark(false)">☀ Light</button>
+        <button id="modeDark" onclick="setDark(true)">☾ Dark</button>
+      </div>
+
+      <div class="section-title">Ambiance</div>
+      <div class="ambiance-grid" id="ambianceGrid"></div>
+
+      <button class="sheet-done" onclick="closeSheet()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CORRECT_PIN = "8888";
+let pin = "";
+let isDark = false;
+let theme = "default";
+
+const ambianceOptions = [
+  { id:"default", label:"Default", cls:"sw-default" },
+  { id:"blossom", label:"Blossom", cls:"sw-blossom" },
+  { id:"grove", label:"Grove", cls:"sw-grove" },
+  { id:"sky", label:"Sky", cls:"sw-sky" },
+  { id:"honey", label:"Honey", cls:"sw-honey" },
+  { id:"clay", label:"Clay", cls:"sw-clay" },
+];
+
+function renderAmbianceGrid() {
+  const grid = document.getElementById('ambianceGrid');
+  grid.innerHTML = "";
+  ambianceOptions.forEach(opt => {
+    const item = document.createElement('div');
+    item.className = 'ambiance-item' + (theme === opt.id ? ' on' : '');
+    item.onclick = () => { setTheme(opt.id); renderAmbianceGrid(); };
+    item.innerHTML = `<div class="ambiance-swatch ${opt.cls}"></div><span>${opt.label}</span>`;
+    grid.appendChild(item);
+  });
+}
+
+function setTheme(name) {
+  theme = name;
+  document.body.classList.remove(...ambianceOptions.map(o => 'theme-' + o.id));
+  document.body.classList.add('theme-' + name);
+}
+setTheme('default');
+document.documentElement.classList.remove('dark');
+document.body.classList.remove('dark');
+
+function setDark(val) {
+  isDark = val;
+  document.body.classList.toggle('dark', isDark);
+  document.documentElement.classList.toggle('dark', isDark);
+  document.getElementById('modeLight').classList.toggle('on', !isDark);
+  document.getElementById('modeDark').classList.toggle('on', isDark);
+}
+function openSheet() {
+  renderAmbianceGrid();
+  setDark(isDark);
+  document.getElementById('sheetBackdrop').classList.add('show');
+}
+function closeSheet() { document.getElementById('sheetBackdrop').classList.remove('show'); }
+function closeSheetOutside(ev) { if (ev.target.id === 'sheetBackdrop') closeSheet(); }
+
+function nowStamp() {
+  const d = new Date();
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+const people = [
+  { id:1, name:"Linda Setiawan", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Linda S (\u1d55\u00b4\ua4b3`\u1d55)/", phone:"",
+    notes:"In PE JAWA 1",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"",
+    qna:[],
+    log:[] },
+  { id:2, name:"Dorote Marenia Dwi Putrandoyo", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"@n14pal28i", phone:"",
+    notes:"New \u2014 hasn't joined any group yet",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Invite directly to PE JAWA 1",
+    qna:[],
+    log:[] },
+  { id:3, name:"Widia Sari Hutabarat", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Widia GYJN", phone:"",
+    notes:"In PE JAWA 1, PE-J-K2, Pemuda Jawa",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"",
+    qna:[],
+    log:[] },
+  { id:4, name:"Bellinda Amanda Laveda Kalontong", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Bella (needs confirmation)", phone:"",
+    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1; confirm Telegram username",
+    qna:[],
+    log:[] },
+  { id:5, name:"Defany Ardyaningrum", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Defany Fany", phone:"",
+    notes:"In PE JAWA 1, Pemuda Jawa",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"",
+    qna:[],
+    log:[] },
+  { id:6, name:"Laura Daniella Anita Sianturi", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Laura Daniella", phone:"",
+    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
+    qna:[],
+    log:[] },
+  { id:7, name:"Christoper Aditya", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Christoper Aditya", phone:"",
+    notes:"In PE JAWA 1, Pemuda Jawa",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"",
+    qna:[],
+    log:[] },
+  { id:8, name:"Stella Ernalita Suryani", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"stellearn (needs confirmation)", phone:"",
+    notes:"In PE JAWA 1, Pemuda Jawa",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Confirm Telegram username",
+    qna:[],
+    log:[] },
+  { id:9, name:"Marchellino Geralda Kalontong", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Marchell", phone:"",
+    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
+    qna:[],
+    log:[] },
+  { id:10, name:"Gracielia Aprily Kurniawan", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Grace (needs confirmation, group owner)", phone:"",
+    notes:"In PE JAWA 1, Pemuda Jawa",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Confirm Telegram username",
+    qna:[],
+    log:[] },
+  { id:11, name:"Ricky Oktavianus", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Riki (needs confirmation)", phone:"",
+    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
+    qna:[],
+    log:[] },
+  { id:12, name:"Natasya Gishelle Jusuf", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Natasya", phone:"",
+    notes:"In PE JAWA 1, Pemuda Jawa",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"",
+    qna:[],
+    log:[] },
+  { id:13, name:"Renaldy Hosea Puah", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Renaldy Hosea", phone:"",
+    notes:"In PE JAWA 1, Pemuda Jawa",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"",
+    qna:[],
+    log:[] },
+  { id:14, name:"Darling Cemara Nuban", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"@Darlingcn", phone:"",
+    notes:"New \u2014 hasn't joined any group yet",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Invite directly to PE JAWA 1",
+    qna:[],
+    log:[] },
+  { id:15, name:"Fransisca", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"@Frnsdewi", phone:"",
+    notes:"New \u2014 hasn't joined any group yet",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Invite directly to PE JAWA 1",
+    qna:[],
+    log:[] },
+  { id:16, name:"Owen Juan Christian", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Owen S (needs confirmation)", phone:"",
+    notes:"Currently in PE-J-K2, Pemuda Jawa \u2014 needs to move to PE JAWA 1",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"Move from PE-J-K2 to PE JAWA 1",
+    qna:[],
+    log:[] },
+  { id:17, name:"Sefen Putra Jaya Giawa", status:"cold", age:"", dob:"", location:"", job:"", family:"", joined:"",
+    telegram:"Sefen Giawa", phone:"",
+    notes:"In PE JAWA 1, Pemuda Jawa",
+    notesUpdated:null,
+    lastContact:"—", nextStep:"",
+    qna:[],
+    log:[] }
+];
+
+const myTodos = [
+  { text:"Send intro messages to the 3 new members (Dorote, Darling, Fransisca)", done:false },
+  { text:"Ask leader/admin to move Bellinda, Laura, Marchellino, Ricky, and Owen into PE JAWA 1", done:false },
+  { text:"Confirm Telegram usernames for Bella, Stella, Grace, Riki, and Owen", done:false }
+];
+
+let currentProfileId = null;
+let journalEntries = [
+  { date:"Aug 28, 2026 · 9:14 PM", text:"First week as leader. Nervous about reaching people I've never met, but I keep coming back to wanting them to feel like family, not a checklist." }
+];
+
+function personSummary(p) {
+  return `${p.name}
+Status: ${statusLabel(p.status)}
+Age: ${p.age}  ·  DOB: ${p.dob}
+Location: ${p.location}
+Occupation: ${p.job}
+Family: ${p.family}
+Joined church: ${p.joined}
+Telegram: ${p.telegram || "—"}
+Phone: ${p.phone || "—"}
+Last contact: ${p.lastContact}
+
+Notes (last updated ${p.notesUpdated || "—"}):
+${p.notes}
+
+Next step:
+${p.nextStep || "—"}
+
+Questions they've asked me:
+${p.qna.length ? p.qna.map(item => `- [${item.ts || "—"}] They asked: ${item.q}\n  I answered: ${item.a}`).join("\n") : "- None yet"}
+
+Meeting log:
+${p.log.length ? p.log.map(e => `- [${e.ts || e.date}] ${e.text}${e.next ? " (Next: " + e.next + ")" : ""}`).join("\n") : "- No meetings logged yet"}
+`;
+}
+
+function downloadText(filename, text) {
+  try {
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast();
+  } catch (e) { /* download unavailable in this preview */ }
+}
+function downloadPerson() {
+  const p = people.find(x => x.id === currentProfileId);
+  if (!p) return;
+  downloadText(`${p.name.replace(/\s+/g,'-')}.txt`, personSummary(p));
+}
+function downloadAll() {
+  const text = people.map(personSummary).join("\n----------------------------\n\n");
+  downloadText("group-summary.txt", text);
+}
+
+// ---- Lock screen ----
+const keypadKeys = ["1","2","3","4","5","6","7","8","9","","0","⌫"];
+const keypadEl = document.getElementById('keypad');
+keypadKeys.forEach(k => {
+  const btn = document.createElement('button');
+  btn.className = 'key' + (k === "" ? " ghost" : "");
+  btn.textContent = k;
+  btn.disabled = k === "";
+  btn.onclick = () => handleKey(k);
+  keypadEl.appendChild(btn);
+});
+
+function handleKey(k) {
+  const err = document.getElementById('lockError');
+  if (k === "⌫") { pin = pin.slice(0, -1); err.textContent = ""; renderDots(); return; }
+  if (pin.length >= 4) return;
+  pin += k;
+  renderDots();
+  if (pin.length === 4) {
+    if (pin === CORRECT_PIN) {
+      playChime();
+      setTimeout(() => {
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        init();
+      }, 250);
+    } else {
+      err.textContent = "That code doesn't match — try again";
+      setTimeout(() => { pin = ""; renderDots(); }, 500);
+    }
+  }
+}
+function renderDots() {
+  const dots = document.querySelectorAll('.pin-dot');
+  dots.forEach((d, i) => d.classList.toggle('filled', i < pin.length));
+}
+
+// ---- Chime (Web Audio, no file needed) ----
+function playChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [1046.5, 1318.5, 1568.0]; // high, light, twinkly triad
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.09);
+      gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + i * 0.09 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.09 + 0.5);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.09);
+      osc.stop(ctx.currentTime + i * 0.09 + 0.5);
+    });
+  } catch (e) { /* audio unavailable, ignore */ }
+}
+function toast() {
+  const t = document.getElementById('chimeToast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1200);
+}
+
+// ---- Screens ----
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.screen === name));
+}
+
+function statusLabel(s) { return { cold:"Cold", warm:"Warm", hot:"Hot", black:"Uncontactable" }[s]; }
+
+function renderBoard() {
+  const order = ["hot","warm","cold","black"];
+  const board = document.getElementById('statusBoard');
+  board.innerHTML = "";
+  order.forEach(status => {
+    const group = people.filter(p => p.status === status);
+    if (!group.length) return;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `<div class="status-group-label"><span class="dot ${status}"></span>${statusLabel(status)} · ${group.length}</div>`;
+    group.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'person-card';
+      card.onclick = () => openProfile(p.id);
+      card.innerHTML = `<div><div class="name">${p.name}</div><div class="meta">Last contact: ${p.lastContact}</div></div>
+        <div class="status-pill ${p.status}">${statusLabel(p.status)}</div>`;
+      wrap.appendChild(card);
+    });
+    board.appendChild(wrap);
+  });
+}
+
+function renderQna(p) {
+  const box = document.getElementById('profQna');
+  box.innerHTML = p.qna.length ? "" : `<div class="sub">No questions from them yet</div>`;
+  p.qna.forEach((item, i) => {
+    const c = document.createElement('div');
+    c.className = 'qna-card';
+    c.innerHTML = `<div class="qna-q"></div><div class="qna-a"></div><div class="qna-ts"></div>
+      <div class="entry-meta">
+        <button class="mini-btn" data-act="edit">✎ Edit</button>
+        <button class="mini-btn danger" data-act="delete">🗑 Delete</button>
+      </div>`;
+    c.querySelector('.qna-q').textContent = "They asked: " + item.q;
+    c.querySelector('.qna-a').textContent = "I answered: " + item.a;
+    c.querySelector('.qna-ts').textContent = "Posted " + (item.ts || "—");
+    c.querySelector('[data-act="edit"]').onclick = () => editQnaEntry(i);
+    c.querySelector('[data-act="delete"]').onclick = () => {
+      p.qna.splice(i, 1); renderQna(p);
+      document.getElementById('qnaCount').textContent = p.qna.length ? p.qna.length : "";
+      toast();
+    };
+    box.appendChild(c);
+  });
+}
+function saveQna() {
+  const p = people.find(x => x.id === currentProfileId);
+  if (!p) return;
+  const q = document.getElementById('qnaQ').value.trim();
+  const a = document.getElementById('qnaA').value.trim();
+  if (!q || !a) return;
+  p.qna.unshift({ q, a, ts: nowStamp() });
+  document.getElementById('qnaQ').value = "";
+  document.getElementById('qnaA').value = "";
+  renderQna(p);
+  document.getElementById('qnaCount').textContent = p.qna.length ? p.qna.length : "";
+  toast();
+}
+function editQnaEntry(i) {
+  const p = people.find(x => x.id === currentProfileId);
+  const item = p.qna[i];
+  document.getElementById('qnaQ').value = item.q;
+  document.getElementById('qnaA').value = item.a;
+  p.qna.splice(i, 1);
+  renderQna(p);
+  document.getElementById('qnaCount').textContent = p.qna.length ? p.qna.length : "";
+  document.getElementById('qnaQ').focus();
+}
+function openQna(id) {
+  const p = people.find(x => x.id === id);
+  if (!p) return;
+  currentProfileId = id;
+  document.getElementById('qnaBackName').textContent = p.name;
+  renderQna(p);
+  showScreen('qna');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+}
+
+function openProfile(id) {
+  currentProfileId = id;
+  const p = people.find(x => x.id === id);
+  document.getElementById('profAvatar').textContent = p.name[0];
+  document.getElementById('profName').textContent = p.name;
+  document.getElementById('profMeta').textContent = `${p.location} · joined ${p.joined}`;
+  document.getElementById('fAge').value = p.age;
+  document.getElementById('fDob').value = p.dob;
+  document.getElementById('fLocation').value = p.location;
+  document.getElementById('fJob').value = p.job;
+  document.getElementById('fFamily').value = p.family;
+  document.getElementById('fJoined').value = p.joined;
+  document.getElementById('fTelegram').value = p.telegram || "";
+  document.getElementById('fPhone').value = p.phone || "";
+  renderNotes(p);
+  document.getElementById('profNextStep').innerHTML = p.nextStep
+    ? `<div class="todo-item"><div class="todo-check"></div>${p.nextStep}</div>` : `<div class="sub">No next step set</div>`;
+
+  const sw = document.getElementById('profStatusSwitch');
+  sw.innerHTML = "";
+  ["cold","warm","hot","black"].forEach(s => {
+    const b = document.createElement('button');
+    b.className = `status-btn ${s}` + (p.status === s ? ' on' : '');
+    b.textContent = statusLabel(s);
+    b.onclick = () => { p.status = s; openProfile(id); toast(); };
+    sw.appendChild(b);
+  });
+
+  document.getElementById('qnaCount').textContent = p.qna.length ? p.qna.length : "";
+
+  renderLog(p);
+
+  showScreen('profile');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+}
+
+// ---- Notes (editable) ----
+function renderNotes(p) {
+  document.getElementById('profNotes').textContent = p.notes || "No notes yet.";
+  document.getElementById('profNotesMeta').textContent = p.notesUpdated ? `Last updated ${p.notesUpdated}` : "";
+  document.getElementById('profNotes').style.display = 'block';
+  document.getElementById('profNotesEdit').style.display = 'none';
+  document.getElementById('notesEditBtn').style.display = 'inline-block';
+  document.getElementById('notesSaveBtn').style.display = 'none';
+  document.getElementById('notesCancelBtn').style.display = 'none';
+}
+function editNotes() {
+  const p = people.find(x => x.id === currentProfileId);
+  document.getElementById('profNotesEdit').value = p.notes;
+  document.getElementById('profNotes').style.display = 'none';
+  document.getElementById('profNotesEdit').style.display = 'block';
+  document.getElementById('notesEditBtn').style.display = 'none';
+  document.getElementById('notesSaveBtn').style.display = 'inline-block';
+  document.getElementById('notesCancelBtn').style.display = 'inline-block';
+}
+function saveNotes() {
+  const p = people.find(x => x.id === currentProfileId);
+  p.notes = document.getElementById('profNotesEdit').value.trim();
+  p.notesUpdated = nowStamp();
+  renderNotes(p);
+  toast();
+}
+function cancelNotes() {
+  const p = people.find(x => x.id === currentProfileId);
+  renderNotes(p);
+}
+
+// ---- Meeting log (editable) ----
+function renderLog(p) {
+  const log = document.getElementById('profLog');
+  log.innerHTML = p.log.length ? "" : `<div class="sub">No meetings logged yet</div>`;
+  p.log.forEach((entry, i) => {
+    const e = document.createElement('div');
+    e.className = 'log-entry';
+    e.innerHTML = `<div class="log-date">${entry.date}</div><div class="log-text"></div>
+      ${entry.next ? `<div class="log-next">Next: ${entry.next}</div>` : ""}
+      <div class="qna-ts">Posted ${entry.ts || entry.date}</div>
+      <div class="entry-meta">
+        <button class="mini-btn" data-act="edit">✎ Edit</button>
+        <button class="mini-btn danger" data-act="delete">🗑 Delete</button>
+      </div>`;
+    e.querySelector('.log-text').textContent = entry.text;
+    e.querySelector('[data-act="edit"]').onclick = () => editLogEntry(i);
+    e.querySelector('[data-act="delete"]').onclick = () => { p.log.splice(i, 1); renderLog(p); toast(); };
+    log.appendChild(e);
+  });
+}
+function saveLog() {
+  const p = people.find(x => x.id === currentProfileId);
+  if (!p) return;
+  const text = document.getElementById('logInput').value.trim();
+  const next = document.getElementById('logNextInput').value.trim();
+  if (!text) return;
+  const stamp = nowStamp();
+  p.log.unshift({ date: stamp.split(' · ')[0], text, next: next || null, ts: stamp });
+  document.getElementById('logInput').value = "";
+  document.getElementById('logNextInput').value = "";
+  renderLog(p);
+  toast();
+}
+function editLogEntry(i) {
+  const p = people.find(x => x.id === currentProfileId);
+  const entry = p.log[i];
+  document.getElementById('logInput').value = entry.text;
+  document.getElementById('logNextInput').value = entry.next || "";
+  p.log.splice(i, 1);
+  renderLog(p);
+  document.getElementById('logInput').focus();
+}
+
+
+// ---- Calendar (mock: September 2026) ----
+const contactDays = {}; // day -> person ids — empty until you start logging meetings
+const birthdays = {}; // day -> name — add once you know their birthdays
+function renderCalendar() {
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = "";
+  ["S","M","T","W","T","F","S"].forEach(d => {
+    const el = document.createElement('div'); el.className = 'cal-dow'; el.textContent = d; grid.appendChild(el);
+  });
+  const startOffset = 2; // Sept 1 2026 is a Tuesday
+  for (let i = 0; i < startOffset; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
+  }
+  for (let day = 1; day <= 30; day++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    if (contactDays[day]) el.classList.add('has-contact');
+    if (birthdays[day]) el.classList.add('birthday');
+    el.textContent = day;
+    el.onclick = () => showDayDetail(day);
+    grid.appendChild(el);
+  }
+}
+function showDayDetail(day) {
+  const dd = document.getElementById('dayDetail');
+  const ids = contactDays[day] || [];
+  const bday = birthdays[day];
+  if (!ids.length && !bday) { dd.style.display = 'none'; return; }
+  dd.style.display = 'block';
+  document.getElementById('dayDetailTitle').textContent = `September ${day}`;
+  const list = document.getElementById('dayDetailList');
+  list.innerHTML = "";
+  ids.forEach(id => {
+    const p = people.find(x => x.id === id);
+    const el = document.createElement('div');
+    el.className = 'dd-person';
+    el.innerHTML = `<span class="dot ${p.status}"></span> Talked with ${p.name} →`;
+    el.onclick = () => openProfile(id);
+    list.appendChild(el);
+  });
+  if (bday) {
+    const el = document.createElement('div');
+    el.className = 'dd-person';
+    el.innerHTML = `✦ ${bday}'s birthday`;
+    list.appendChild(el);
+  }
+}
+
+// ---- Todos ----
+function renderTodos() {
+  const mine = document.getElementById('myTodos');
+  mine.innerHTML = "";
+  myTodos.forEach((t, i) => {
+    const el = document.createElement('div');
+    el.className = 'todo-item' + (t.done ? ' done-text' : '');
+    el.innerHTML = `<div class="todo-check${t.done ? ' done' : ''}"></div><div style="flex:1;">${t.text}</div>
+      <button class="mini-btn danger" style="margin-left:6px;">🗑</button>`;
+    el.querySelector('.todo-check').onclick = (ev) => { ev.stopPropagation(); t.done = !t.done; renderTodos(); };
+    el.querySelector('.mini-btn').onclick = (ev) => { ev.stopPropagation(); myTodos.splice(i, 1); renderTodos(); };
+    mine.appendChild(el);
+  });
+
+  const perPerson = document.getElementById('personTodos');
+  perPerson.innerHTML = "";
+  people.filter(p => p.nextStep).forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'todo-item';
+    el.innerHTML = `<div class="todo-check"></div><div>${p.nextStep}</div><div class="todo-owner">${p.name}</div>`;
+    el.onclick = () => openProfile(p.id);
+    perPerson.appendChild(el);
+  });
+}
+
+function init() {
+  document.getElementById('dateLine').textContent = "Thursday, September 3";
+  renderBoard();
+  renderCalendar();
+  renderTodos();
+  renderJournal();
+}
+
+// ---- Journal ----
+function renderJournal() {
+  const list = document.getElementById('journalList');
+  list.innerHTML = "";
+  journalEntries.forEach((e, i) => {
+    const el = document.createElement('div');
+    el.className = 'journal-entry';
+    el.innerHTML = `<div class="journal-date">${e.date}</div><div class="journal-text"></div>
+      <div class="entry-meta">
+        <button class="mini-btn" data-act="edit">✎ Edit</button>
+        <button class="mini-btn danger" data-act="delete">🗑 Delete</button>
+      </div>`;
+    el.querySelector('.journal-text').textContent = e.text;
+    el.querySelector('[data-act="edit"]').onclick = () => editJournalEntry(i);
+    el.querySelector('[data-act="delete"]').onclick = () => { journalEntries.splice(i, 1); renderJournal(); toast(); };
+    list.appendChild(el);
+  });
+}
+function saveJournal() {
+  const input = document.getElementById('journalInput');
+  const text = input.value.trim();
+  if (!text) return;
+  journalEntries.unshift({ date: nowStamp(), text });
+  input.value = "";
+  renderJournal();
+  playChime();
+  toast();
+}
+function editJournalEntry(i) {
+  document.getElementById('journalInput').value = journalEntries[i].text;
+  journalEntries.splice(i, 1);
+  renderJournal();
+  document.getElementById('journalInput').focus();
+}
+</script>
