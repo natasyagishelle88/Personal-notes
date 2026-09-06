@@ -466,8 +466,8 @@ body.dark .report-card { background: var(--dusk-card); border-color: var(--dusk-
 .report-row-label { font-size: 11px; color: var(--ink-soft); margin: 12px 0 5px; font-weight: 700; }
 body.dark .report-row-label { color: var(--fog-soft); }
 .report-textarea {
-  width: 100%; min-height: 50px; border: 1px solid var(--line); border-radius: 10px;
-  background: var(--linen); padding: 9px 11px; font-family: 'Karla', sans-serif; font-size: 13px;
+  width: 100%; min-height: 38px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--linen); padding: 8px 11px; font-family: 'Karla', sans-serif; font-size: 13px;
   color: var(--ink); resize: vertical;
 }
 body.dark .report-textarea { background: var(--dusk); border-color: var(--dusk-line); color: var(--fog); }
@@ -1424,7 +1424,7 @@ function showDayDetail(day, month, year) {
     el.onclick = () => { openReport(); showReportTab('wednesday'); };
     list.appendChild(el);
   }
-  if (archive) {
+  if (archive && !isLiveSunday && !isLiveWednesday) {
     const el = document.createElement('div');
     el.className = 'dd-person';
     const yesCount = (arr) => (arr || []).filter(x => x.status === 'yes').length;
@@ -1708,6 +1708,18 @@ function renderServiceTab(serviceType) {
   });
 }
 
+let expandedExtraIds = new Set();
+
+function extraSummaryLine(row, teaCount) {
+  const parts = [];
+  parts.push(row.visitation_notes ? '📍' : '');
+  parts.push(teaCount ? `☕${teaCount}` : '');
+  parts.push(row.fellowship_status === 'yes' ? '👥✓' : row.fellowship_status === 'no' ? '👥✕' : '');
+  parts.push(row.evangelism_count ? `✝️${row.evangelism_count}` : '');
+  const filled = parts.filter(Boolean).join('  ');
+  return filled || t('noEntryYet');
+}
+
 function renderExtraTab() {
   const body = document.getElementById('reportBody');
   body.innerHTML = "";
@@ -1716,11 +1728,27 @@ function renderExtraTab() {
   list.forEach(p => {
     const row = extraData[p.id] || { visitation_notes: '', fellowship_status: null, fellowship_notes: '', evangelism_count: 0, evangelism_notes: '' };
     const teaCount = teaCounts[p.id] || 0;
+    const isOpen = expandedExtraIds.has(p.id);
+
     const card = document.createElement('div');
     card.className = 'report-card';
-    card.innerHTML = `
-      <div class="report-name"><span class="dot ${p.status}"></span>${p.name}</div>
+    card.style.paddingBottom = isOpen ? '14px' : '10px';
 
+    const header = document.createElement('div');
+    header.className = 'report-name';
+    header.style.cursor = 'pointer';
+    header.style.justifyContent = 'space-between';
+    header.style.display = 'flex';
+    header.innerHTML = `<span><span class="dot ${p.status}"></span>${p.name}</span><span class="sub" style="font-weight:400;">${isOpen ? '▲' : extraSummaryLine(row, teaCount) + '  ▼'}</span>`;
+    header.addEventListener('click', () => {
+      if (isOpen) expandedExtraIds.delete(p.id); else expandedExtraIds.add(p.id);
+      renderExtraTab();
+    });
+    card.appendChild(header);
+    if (!isOpen) { body.appendChild(card); return; }
+
+    const formWrap = document.createElement('div');
+    formWrap.innerHTML = `
       <div class="report-row-label">${t('visitation')}</div>
       <textarea class="report-textarea" data-field="visitation_notes" placeholder="${t('visitation')}...">${row.visitation_notes || ''}</textarea>
 
@@ -1746,8 +1774,9 @@ function renderExtraTab() {
 
       <button class="mini-btn danger report-clear">🗑 ${t('clearEntry')}</button>
     `;
+    card.appendChild(formWrap);
 
-    const felBtns = card.querySelectorAll('[data-fel]');
+    const felBtns = formWrap.querySelectorAll('[data-fel]');
     function refreshFel() { felBtns.forEach(b => b.classList.toggle('on', b.dataset.fel === row.fellowship_status)); }
     refreshFel();
 
@@ -1767,13 +1796,13 @@ function renderExtraTab() {
       toast();
     }
 
-    card.querySelector('[data-field="visitation_notes"]').addEventListener('blur', (e) => { row.visitation_notes = e.target.value.trim(); persist(); });
-    card.querySelector('[data-field="fellowship_notes"]').addEventListener('blur', (e) => { row.fellowship_notes = e.target.value.trim(); persist(); });
-    card.querySelector('[data-field="evangelism_notes"]').addEventListener('blur', (e) => { row.evangelism_notes = e.target.value.trim(); persist(); });
-    card.querySelector('[data-field="evangelism_count"]').addEventListener('change', (e) => { row.evangelism_count = parseInt(e.target.value) || 0; persist(); });
+    formWrap.querySelector('[data-field="visitation_notes"]').addEventListener('blur', (e) => { row.visitation_notes = e.target.value.trim(); persist(); });
+    formWrap.querySelector('[data-field="fellowship_notes"]').addEventListener('blur', (e) => { row.fellowship_notes = e.target.value.trim(); persist(); });
+    formWrap.querySelector('[data-field="evangelism_notes"]').addEventListener('blur', (e) => { row.evangelism_notes = e.target.value.trim(); persist(); });
+    formWrap.querySelector('[data-field="evangelism_count"]').addEventListener('change', (e) => { row.evangelism_count = parseInt(e.target.value) || 0; persist(); });
     felBtns.forEach(b => b.addEventListener('click', () => { row.fellowship_status = b.dataset.fel; refreshFel(); persist(); }));
 
-    card.querySelector('.tea-log').addEventListener('click', async () => {
+    formWrap.querySelector('.tea-log').addEventListener('click', async () => {
       const stamp = nowStamp();
       const { error } = await sb.from('meeting_log').insert({
         person_id: p.id, entry_date: stamp.split(' · ')[0], entry_text: 'Tea time', entry_type: 'tea_time'
@@ -1786,7 +1815,7 @@ function renderExtraTab() {
       toast();
     });
 
-    card.querySelector('.report-clear').addEventListener('click', async () => {
+    formWrap.querySelector('.report-clear').addEventListener('click', async () => {
       const existing = extraData[p.id];
       if (existing && existing.id) { await sb.from('additional_info').delete().eq('id', existing.id); }
       delete extraData[p.id];
@@ -1799,8 +1828,9 @@ function renderExtraTab() {
 }
 
 
+
 async function init() {
-  document.getElementById('dateLine').textContent = "Thursday, September 3";
+  document.getElementById('dateLine').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   try { await sb.rpc('archive_and_reset_week'); } catch (e) { console.error('archive rpc failed', e); }
   await Promise.all([loadPeople(), loadJournal(), loadTodos(), loadAllLogs(), loadWeeklyArchives()]);
   await loadReportData();
