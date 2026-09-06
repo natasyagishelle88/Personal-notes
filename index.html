@@ -640,6 +640,10 @@ body.dark .report-num { background: var(--dusk); border-color: var(--dusk-line);
       </div>
 
       <div id="reportBody"></div>
+
+      <div class="section-title" id="sundaySummaryTitle" style="margin-top:26px;">Sunday Service Summary</div>
+      <div class="report-card" id="sundaySummaryCard"></div>
+      <button class="dl-btn" id="viewOnCalendarBtn" onclick="goToCalendarThisWeek()">View on Calendar →</button>
     </div>
 
   </div>
@@ -736,11 +740,13 @@ const I18N = {
     myTodoList: "My to-do list", addTodoPlaceholder: "Add a to-do...", nextStepsByPerson: "Next steps by person",
     justForYou: "Just for you", saveEntry: "Save entry",
     reportTitle: "Weekly report", rtabSunday: "Sunday Service", rtabWednesday: "Wednesday Service", rtabExtra: "Additional Info",
-    weekOf: "Week of", statusYes: "Yes", statusNo: "No", statusMakeup: "Makeup", camOn: "On cam", camOff: "Off cam",
+    weekOf: "Week of", statusYes: "Yes", statusNo: "No", statusMakeup: "Makeup", statusExcused: "Excused", camOn: "On cam", camOff: "Off cam",
     notesLabel: "Notes", clearEntry: "Clear this entry", visitation: "Visitation", teaTime: "Tea time",
     logTeaTime: "+ Log tea time", timesThisWeek: "time(s) this week", fellowship: "Small group fellowship",
     evangelism: "Evangelism", evangelismCount: "People reached", noPeopleYet: "No one in the group yet.",
-    archivedWeekTitle: "Weekly report archive", pastWeekNote: "This week's report was archived and reset."
+    archivedWeekTitle: "Weekly report archive", pastWeekNote: "This week's report was archived and reset.",
+    sundaySummary: "Sunday Service Summary", present: "Present", absent: "Absent", excused: "Excused",
+    viewOnCalendar: "View on Calendar →", noEntryYet: "No entry yet", noneMarked: "None marked"
   },
   id: {
     tabGroup: "Grup", tabCalendar: "Kalender", tabTodo: "To-do", tabJournal: "Jurnal", tabReport: "Laporan",
@@ -750,11 +756,13 @@ const I18N = {
     myTodoList: "Daftar tugas saya", addTodoPlaceholder: "Tambah tugas...", nextStepsByPerson: "Langkah berikutnya per anggota",
     justForYou: "Khusus untuk kamu", saveEntry: "Simpan catatan",
     reportTitle: "Laporan mingguan", rtabSunday: "Ibadah Minggu", rtabWednesday: "Ibadah Rabu", rtabExtra: "Info Tambahan",
-    weekOf: "Minggu", statusYes: "Iya", statusNo: "Tidak", statusMakeup: "Susulan", camOn: "On cam", camOff: "Off cam",
+    weekOf: "Minggu", statusYes: "Iya", statusNo: "Tidak", statusMakeup: "Susulan", statusExcused: "Izin", camOn: "On cam", camOff: "Off cam",
     notesLabel: "Catatan", clearEntry: "Hapus data ini", visitation: "Kunjungan", teaTime: "Tea time",
     logTeaTime: "+ Catat tea time", timesThisWeek: "kali minggu ini", fellowship: "Persekutuan kelompok",
     evangelism: "Penginjilan", evangelismCount: "Jumlah orang", noPeopleYet: "Belum ada anggota di grup.",
-    archivedWeekTitle: "Arsip laporan mingguan", pastWeekNote: "Laporan minggu ini sudah diarsipkan dan direset."
+    archivedWeekTitle: "Arsip laporan mingguan", pastWeekNote: "Laporan minggu ini sudah diarsipkan dan direset.",
+    sundaySummary: "Ringkasan Ibadah Minggu", present: "Hadir", absent: "Tidak hadir", excused: "Izin",
+    viewOnCalendar: "Lihat di Kalender →", noEntryYet: "Belum ada data", noneMarked: "Belum ada yang ditandai"
   }
 };
 function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key; }
@@ -1320,6 +1328,13 @@ function changeMonth(delta) {
   document.getElementById('dayDetail').style.display = 'none';
 }
 
+function isSameDate(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+function thisWeeksServiceDate(serviceType) {
+  const d = getWeekStart();
+  d.setDate(d.getDate() + (serviceType === 'sunday' ? 6 : 2)); // Monday + 6 = Sunday, Monday + 2 = Wednesday
+  return d;
+}
+
 function renderCalendar() {
   const base = new Date();
   base.setDate(1);
@@ -1330,6 +1345,11 @@ function renderCalendar() {
   const startWeekday = new Date(year, month, 1).getDay();
 
   document.getElementById('calMonthTitle').textContent = base.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const thisSunday = thisWeeksServiceDate('sunday');
+  const thisWednesday = thisWeeksServiceDate('wednesday');
+  const liveSundayHasData = Object.keys(serviceData.sunday || {}).length > 0;
+  const liveWednesdayHasData = Object.keys(serviceData.wednesday || {}).length > 0;
 
   const grid = document.getElementById('calGrid');
   grid.innerHTML = "";
@@ -1345,10 +1365,12 @@ function renderCalendar() {
     const dateObj = new Date(year, month, day);
     const hasContact = allLogs.some(l => l.day === day && l.month === month && l.year === year);
     const hasBirthday = people.some(p => { const b = parseBirthday(p.dob); return b && b.day === day && b.month === month; });
-    const archive = (dateObj.getDay() === 0) ? archiveForDate(dateObj) : null; // show report marker on the Sunday of an archived week
+    const archive = (dateObj.getDay() === 0) ? archiveForDate(dateObj) : null;
+    const isLiveSunday = isSameDate(dateObj, thisSunday) && liveSundayHasData;
+    const isLiveWednesday = isSameDate(dateObj, thisWednesday) && liveWednesdayHasData;
     if (hasContact) el.classList.add('has-contact');
     if (hasBirthday) el.classList.add('birthday');
-    if (archive) el.classList.add('has-report');
+    if (archive || isLiveSunday || isLiveWednesday) el.classList.add('has-report');
     el.textContent = day;
     el.onclick = () => showDayDetail(day, month, year);
     grid.appendChild(el);
@@ -1361,7 +1383,9 @@ function showDayDetail(day, month, year) {
   const contactPeopleIds = [...new Set(allLogs.filter(l => l.day === day && l.month === month && l.year === year).map(l => l.personId))];
   const birthdayPeople = people.filter(p => { const b = parseBirthday(p.dob); return b && b.day === day && b.month === month; });
   const archive = (dateObj.getDay() === 0) ? archiveForDate(dateObj) : null;
-  if (!contactPeopleIds.length && !birthdayPeople.length && !archive) { dd.style.display = 'none'; return; }
+  const isLiveSunday = isSameDate(dateObj, thisWeeksServiceDate('sunday')) && Object.keys(serviceData.sunday || {}).length > 0;
+  const isLiveWednesday = isSameDate(dateObj, thisWeeksServiceDate('wednesday')) && Object.keys(serviceData.wednesday || {}).length > 0;
+  if (!contactPeopleIds.length && !birthdayPeople.length && !archive && !isLiveSunday && !isLiveWednesday) { dd.style.display = 'none'; return; }
   dd.style.display = 'block';
   const monthName = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long' });
   document.getElementById('dayDetailTitle').textContent = `${monthName} ${day}`;
@@ -1384,6 +1408,22 @@ function showDayDetail(day, month, year) {
     el.onclick = () => openProfile(p.id);
     list.appendChild(el);
   });
+  if (isLiveSunday) {
+    const el = document.createElement('div');
+    el.className = 'dd-person';
+    const yesCount = Object.values(serviceData.sunday).filter(r => r.status === 'yes').length;
+    el.innerHTML = `📋 ${t('rtabSunday')} (${t('present')}: ${yesCount}) →`;
+    el.onclick = () => { openReport(); showReportTab('sunday'); };
+    list.appendChild(el);
+  }
+  if (isLiveWednesday) {
+    const el = document.createElement('div');
+    el.className = 'dd-person';
+    const yesCount = Object.values(serviceData.wednesday).filter(r => r.status === 'yes').length;
+    el.innerHTML = `📋 ${t('rtabWednesday')} (${t('present')}: ${yesCount}) →`;
+    el.onclick = () => { openReport(); showReportTab('wednesday'); };
+    list.appendChild(el);
+  }
   if (archive) {
     const el = document.createElement('div');
     el.className = 'dd-person';
@@ -1548,6 +1588,42 @@ function renderReportBody() {
   document.getElementById('rtabExtra').textContent = t('rtabExtra');
   if (reportTab === 'extra') renderExtraTab();
   else renderServiceTab(reportTab);
+  renderSundaySummary();
+}
+
+function renderSundaySummary() {
+  document.getElementById('sundaySummaryTitle').textContent = t('sundaySummary');
+  document.getElementById('viewOnCalendarBtn').textContent = t('viewOnCalendar');
+  const rows = Object.values(serviceData.sunday || {});
+  const present = rows.filter(r => r.status === 'yes');
+  const absent = rows.filter(r => r.status === 'no');
+  const excused = rows.filter(r => r.status === 'izin' || r.status === 'makeup');
+  const nameOf = (id) => { const p = people.find(x => x.id === id); return p ? p.name : '—'; };
+
+  const card = document.getElementById('sundaySummaryCard');
+  if (!rows.length) {
+    card.innerHTML = `<div class="sub">${t('noEntryYet')}</div>`;
+    return;
+  }
+  card.innerHTML = `
+    <div class="report-row-label">${t('present')} (${present.length})</div>
+    <div class="sub">${present.length ? present.map(r => `${nameOf(r.person_id)}${r.cam_status ? ' · ' + (r.cam_status === 'on' ? t('camOn') : t('camOff')) : ''}${r.notes ? ' — ' + r.notes : ''}`).join('<br>') : t('noneMarked')}</div>
+    <div class="report-row-label">${t('absent')} (${absent.length})</div>
+    <div class="sub">${absent.length ? absent.map(r => nameOf(r.person_id)).join(', ') : t('noneMarked')}</div>
+    <div class="report-row-label">${t('excused')} (${excused.length})</div>
+    <div class="sub">${excused.length ? excused.map(r => nameOf(r.person_id)).join(', ') : t('noneMarked')}</div>
+  `;
+}
+
+function goToCalendarThisWeek() {
+  showScreen('calendar');
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.screen === 'calendar'));
+  calendarMonthOffset = 0;
+  renderCalendar();
+  const today = new Date();
+  const sunday = getWeekStart(today);
+  sunday.setDate(sunday.getDate() + 6);
+  showDayDetail(sunday.getDate(), sunday.getMonth(), sunday.getFullYear());
 }
 
 function renderServiceTab(serviceType) {
@@ -1565,6 +1641,7 @@ function renderServiceTab(serviceType) {
         <button data-val="yes">${t('statusYes')}</button>
         <button data-val="no">${t('statusNo')}</button>
         <button data-val="makeup">${t('statusMakeup')}</button>
+        <button data-val="izin">${t('statusExcused')}</button>
       </div>
       <div class="cam-row" style="display:none; margin-top:8px;">
         <div class="segmented" style="flex:1;">
@@ -1599,6 +1676,8 @@ function renderServiceTab(serviceType) {
         .select().single();
       if (error) { console.error(error); return; }
       serviceData[serviceType][p.id] = data;
+      if (serviceType === 'sunday') renderSundaySummary();
+      renderCalendar();
       toast();
     }
 
@@ -1620,6 +1699,8 @@ function renderServiceTab(serviceType) {
       if (existing && existing.id) { await sb.from('service_attendance').delete().eq('id', existing.id); }
       delete serviceData[serviceType][p.id];
       renderServiceTab(serviceType);
+      renderSundaySummary();
+      renderCalendar();
       toast();
     });
 
@@ -1722,6 +1803,7 @@ async function init() {
   document.getElementById('dateLine').textContent = "Thursday, September 3";
   try { await sb.rpc('archive_and_reset_week'); } catch (e) { console.error('archive rpc failed', e); }
   await Promise.all([loadPeople(), loadJournal(), loadTodos(), loadAllLogs(), loadWeeklyArchives()]);
+  await loadReportData();
   renderBoard();
   renderCalendar();
   renderTodos();
