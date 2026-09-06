@@ -338,6 +338,10 @@ body.dark .cal-day.has-contact { background: rgba(126,155,114,0.25); }
 .cal-day.birthday::after {
   content: '✦'; position: absolute; top: -4px; right: -2px; font-size: 9px; color: var(--hot);
 }
+.cal-day.has-report { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.cal-day.has-report::before {
+  content: '📋'; position: absolute; bottom: -3px; left: -2px; font-size: 8px;
+}
 
 .day-detail { background: var(--linen-card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 20px; }
 body.dark .day-detail { background: var(--dusk-card); border-color: var(--dusk-line); }
@@ -451,6 +455,30 @@ body.dark .journal-date { color: var(--fog-soft); }
   padding: 8px 16px; border-radius: 100px; cursor: pointer; margin-top: 8px;
 }
 body.dark .journal-save { background: var(--fog); color: var(--dusk); }
+
+/* ---- Weekly report ---- */
+.report-card {
+  background: var(--linen-card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+}
+body.dark .report-card { background: var(--dusk-card); border-color: var(--dusk-line); }
+.report-name { font-family: 'Fraunces', serif; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.report-row-label { font-size: 11px; color: var(--ink-soft); margin: 12px 0 5px; font-weight: 700; }
+body.dark .report-row-label { color: var(--fog-soft); }
+.report-textarea {
+  width: 100%; min-height: 50px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--linen); padding: 9px 11px; font-family: 'Karla', sans-serif; font-size: 13px;
+  color: var(--ink); resize: vertical;
+}
+body.dark .report-textarea { background: var(--dusk); border-color: var(--dusk-line); color: var(--fog); }
+.report-num {
+  width: 72px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+  font-family: 'Karla', sans-serif; font-size: 13px; color: var(--ink); background: var(--linen);
+}
+body.dark .report-num { background: var(--dusk); border-color: var(--dusk-line); color: var(--fog); }
+.report-clear { margin-top: 10px; }
+.tea-row { display: flex; align-items: center; gap: 10px; }
+
 </style>
 </head>
 <body>
@@ -482,17 +510,18 @@ body.dark .journal-save { background: var(--fog); color: var(--dusk); }
     </div>
 
     <div class="tabbar">
-      <button class="tab active" data-screen="board" onclick="showScreen('board')">Group</button>
-      <button class="tab" data-screen="calendar" onclick="showScreen('calendar')">Calendar</button>
-      <button class="tab" data-screen="todos" onclick="showScreen('todos')">To-do</button>
-      <button class="tab" data-screen="journal" onclick="showScreen('journal')">Journal</button>
+      <button class="tab active" data-screen="board" onclick="showScreen('board')" data-i18n="tabGroup">Group</button>
+      <button class="tab" data-screen="calendar" onclick="showScreen('calendar')" data-i18n="tabCalendar">Calendar</button>
+      <button class="tab" data-screen="todos" onclick="showScreen('todos')" data-i18n="tabTodo">To-do</button>
+      <button class="tab" data-screen="journal" onclick="showScreen('journal')" data-i18n="tabJournal">Journal</button>
+      <button class="tab" data-screen="report" onclick="openReport()" data-i18n="tabReport">Report</button>
     </div>
 
     <!-- BOARD SCREEN -->
     <div class="screen active" id="screen-board">
       <div class="board-header">
-        <div class="section-title" style="margin:0;">Your group</div>
-        <button class="dl-btn" onclick="downloadAll()">⬇ Download all</button>
+        <div class="section-title" style="margin:0;" data-i18n="yourGroup">Your group</div>
+        <button class="dl-btn" onclick="downloadAll()" data-i18n="downloadAll">⬇ Download all</button>
       </div>
       <div class="status-board" id="statusBoard"></div>
     </div>
@@ -579,24 +608,38 @@ body.dark .journal-save { background: var(--fog); color: var(--dusk); }
 
     <!-- TODOS SCREEN -->
     <div class="screen" id="screen-todos">
-      <div class="section-title" style="margin-top:6px;">My to-do list</div>
+      <div class="section-title" style="margin-top:6px;" data-i18n="myTodoList">My to-do list</div>
       <div class="journal-compose">
-        <input id="todoInput" placeholder="Add a to-do..." style="width:100%; border:none; background:transparent; font-family:'Karla',sans-serif; font-size:13.5px; color:var(--ink);">
+        <input id="todoInput" placeholder="Add a to-do..." data-i18n-placeholder="addTodoPlaceholder" style="width:100%; border:none; background:transparent; font-family:'Karla',sans-serif; font-size:13.5px; color:var(--ink);">
         <button class="journal-save" onclick="saveTodo()">Add</button>
       </div>
       <div id="myTodos"></div>
-      <div class="section-title">Next steps by person</div>
+      <div class="section-title" data-i18n="nextStepsByPerson">Next steps by person</div>
       <div id="personTodos"></div>
     </div>
 
     <!-- JOURNAL SCREEN -->
     <div class="screen" id="screen-journal">
-      <div class="section-title" style="margin-top:6px;">Just for you</div>
+      <div class="section-title" style="margin-top:6px;" data-i18n="justForYou">Just for you</div>
       <div class="journal-compose">
         <textarea id="journalInput" placeholder="Write whatever's on your mind — no one else sees this."></textarea>
-        <button class="journal-save" onclick="saveJournal()">Save entry</button>
+        <button class="journal-save" onclick="saveJournal()" data-i18n="saveEntry">Save entry</button>
       </div>
       <div id="journalList"></div>
+    </div>
+
+    <!-- WEEKLY REPORT SCREEN -->
+    <div class="screen" id="screen-report">
+      <div class="section-title" id="reportTitle" style="margin-top:6px;">Weekly report</div>
+      <div class="sub" id="reportWeekRange" style="margin-bottom:14px;"></div>
+
+      <div class="tabbar" style="padding:0 0 14px;">
+        <button class="tab active" data-rtab="sunday" onclick="showReportTab('sunday')" id="rtabSunday">Ibadah Minggu</button>
+        <button class="tab" data-rtab="wednesday" onclick="showReportTab('wednesday')" id="rtabWednesday">Ibadah Rabu</button>
+        <button class="tab" data-rtab="extra" onclick="showReportTab('extra')" id="rtabExtra">Info Tambahan</button>
+      </div>
+
+      <div id="reportBody"></div>
     </div>
 
   </div>
@@ -607,18 +650,24 @@ body.dark .journal-save { background: var(--fog); color: var(--dusk); }
   <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheetOutside(event)">
     <div class="sheet">
       <div class="sheet-handle"></div>
-      <h2>Appearance</h2>
+      <h2 id="appearanceTitle" data-i18n="appearanceTitle">Appearance</h2>
 
-      <div class="section-title" style="margin-top:0;">Mode</div>
+      <div class="section-title" id="langTitle" data-i18n="languageLabel" style="margin-top:0;">Language</div>
       <div class="segmented">
-        <button id="modeLight" onclick="setDark(false)">☀ Light</button>
-        <button id="modeDark" onclick="setDark(true)">☾ Dark</button>
+        <button id="langEn" onclick="setLang('en')">English</button>
+        <button id="langId" onclick="setLang('id')">Indonesia</button>
       </div>
 
-      <div class="section-title">Ambiance</div>
+      <div class="section-title" id="modeTitle" data-i18n="modeLabel">Mode</div>
+      <div class="segmented">
+        <button id="modeLight" onclick="setDark(false)" data-i18n="lightLabel">☀ Light</button>
+        <button id="modeDark" onclick="setDark(true)" data-i18n="darkLabel">☾ Dark</button>
+      </div>
+
+      <div class="section-title" id="ambianceTitle" data-i18n="ambianceLabel">Ambiance</div>
       <div class="ambiance-grid" id="ambianceGrid"></div>
 
-      <button class="sheet-done" onclick="closeSheet()">Done</button>
+      <button class="sheet-done" id="sheetDoneBtn" onclick="closeSheet()" data-i18n="doneLabel">Done</button>
     </div>
   </div>
 </div>
@@ -670,10 +719,59 @@ function setDark(val) {
 function openSheet() {
   renderAmbianceGrid();
   setDark(isDark);
+  updateLangButtons();
   document.getElementById('sheetBackdrop').classList.add('show');
 }
 function closeSheet() { document.getElementById('sheetBackdrop').classList.remove('show'); }
 function closeSheetOutside(ev) { if (ev.target.id === 'sheetBackdrop') closeSheet(); }
+
+// ---- Language (English / Indonesia) ----
+let lang = 'en';
+const I18N = {
+  en: {
+    tabGroup: "Group", tabCalendar: "Calendar", tabTodo: "To-do", tabJournal: "Journal", tabReport: "Report",
+    appearanceTitle: "Appearance", languageLabel: "Language", modeLabel: "Mode", ambianceLabel: "Ambiance",
+    lightLabel: "☀ Light", darkLabel: "☾ Dark", doneLabel: "Done",
+    yourGroup: "Your group", downloadAll: "⬇ Download all",
+    myTodoList: "My to-do list", addTodoPlaceholder: "Add a to-do...", nextStepsByPerson: "Next steps by person",
+    justForYou: "Just for you", saveEntry: "Save entry",
+    reportTitle: "Weekly report", rtabSunday: "Sunday Service", rtabWednesday: "Wednesday Service", rtabExtra: "Additional Info",
+    weekOf: "Week of", statusYes: "Yes", statusNo: "No", statusMakeup: "Makeup", camOn: "On cam", camOff: "Off cam",
+    notesLabel: "Notes", clearEntry: "Clear this entry", visitation: "Visitation", teaTime: "Tea time",
+    logTeaTime: "+ Log tea time", timesThisWeek: "time(s) this week", fellowship: "Small group fellowship",
+    evangelism: "Evangelism", evangelismCount: "People reached", noPeopleYet: "No one in the group yet.",
+    archivedWeekTitle: "Weekly report archive", pastWeekNote: "This week's report was archived and reset."
+  },
+  id: {
+    tabGroup: "Grup", tabCalendar: "Kalender", tabTodo: "To-do", tabJournal: "Jurnal", tabReport: "Laporan",
+    appearanceTitle: "Tampilan", languageLabel: "Bahasa", modeLabel: "Mode", ambianceLabel: "Suasana",
+    lightLabel: "☀ Terang", darkLabel: "☾ Gelap", doneLabel: "Selesai",
+    yourGroup: "Grup kamu", downloadAll: "⬇ Unduh semua",
+    myTodoList: "Daftar tugas saya", addTodoPlaceholder: "Tambah tugas...", nextStepsByPerson: "Langkah berikutnya per anggota",
+    justForYou: "Khusus untuk kamu", saveEntry: "Simpan catatan",
+    reportTitle: "Laporan mingguan", rtabSunday: "Ibadah Minggu", rtabWednesday: "Ibadah Rabu", rtabExtra: "Info Tambahan",
+    weekOf: "Minggu", statusYes: "Iya", statusNo: "Tidak", statusMakeup: "Susulan", camOn: "On cam", camOff: "Off cam",
+    notesLabel: "Catatan", clearEntry: "Hapus data ini", visitation: "Kunjungan", teaTime: "Tea time",
+    logTeaTime: "+ Catat tea time", timesThisWeek: "kali minggu ini", fellowship: "Persekutuan kelompok",
+    evangelism: "Penginjilan", evangelismCount: "Jumlah orang", noPeopleYet: "Belum ada anggota di grup.",
+    archivedWeekTitle: "Arsip laporan mingguan", pastWeekNote: "Laporan minggu ini sudah diarsipkan dan direset."
+  }
+};
+function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key; }
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  updateLangButtons();
+  if (document.getElementById('screen-report').classList.contains('active')) renderReportBody();
+}
+function updateLangButtons() {
+  document.getElementById('langEn').classList.toggle('on', lang === 'en');
+  document.getElementById('langId').classList.toggle('on', lang === 'id');
+}
+function setLang(l) {
+  lang = l;
+  applyI18n();
+}
 
 function nowStamp() {
   const d = new Date();
@@ -1178,12 +1276,35 @@ let calendarMonthOffset = 0;
 let allLogs = []; // { personId, day, month, year } for every logged meeting, across everyone
 
 async function loadAllLogs() {
-  const { data, error } = await sb.from('meeting_log').select('person_id, created_at');
+  const { data, error } = await sb.from('meeting_log').select('person_id, entry_type, created_at');
   if (error) { console.error(error); allLogs = []; return; }
   allLogs = (data || []).map(row => {
     const d = new Date(row.created_at);
-    return { personId: row.person_id, day: d.getDate(), month: d.getMonth(), year: d.getFullYear() };
+    return { personId: row.person_id, type: row.entry_type, day: d.getDate(), month: d.getMonth(), year: d.getFullYear() };
   });
+}
+
+let weeklyArchives = [];
+async function loadWeeklyArchives() {
+  const { data, error } = await sb.from('weekly_archive').select('*').order('week_start', { ascending: false });
+  if (error) { console.error(error); weeklyArchives = []; return; }
+  weeklyArchives = data || [];
+}
+function toISODate(d) {
+  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function getWeekStart(d = new Date()) {
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  const monday = new Date(d);
+  monday.setHours(0,0,0,0);
+  monday.setDate(d.getDate() + diff);
+  return monday;
+}
+function archiveForDate(dateObj) {
+  const iso = toISODate(dateObj);
+  return weeklyArchives.find(a => iso >= a.week_start && iso <= a.week_end) || null;
 }
 
 function parseBirthday(dobStr) {
@@ -1221,10 +1342,13 @@ function renderCalendar() {
   for (let day = 1; day <= daysInMonth; day++) {
     const el = document.createElement('div');
     el.className = 'cal-day';
+    const dateObj = new Date(year, month, day);
     const hasContact = allLogs.some(l => l.day === day && l.month === month && l.year === year);
     const hasBirthday = people.some(p => { const b = parseBirthday(p.dob); return b && b.day === day && b.month === month; });
+    const archive = (dateObj.getDay() === 0) ? archiveForDate(dateObj) : null; // show report marker on the Sunday of an archived week
     if (hasContact) el.classList.add('has-contact');
     if (hasBirthday) el.classList.add('birthday');
+    if (archive) el.classList.add('has-report');
     el.textContent = day;
     el.onclick = () => showDayDetail(day, month, year);
     grid.appendChild(el);
@@ -1233,9 +1357,11 @@ function renderCalendar() {
 
 function showDayDetail(day, month, year) {
   const dd = document.getElementById('dayDetail');
+  const dateObj = new Date(year, month, day);
   const contactPeopleIds = [...new Set(allLogs.filter(l => l.day === day && l.month === month && l.year === year).map(l => l.personId))];
   const birthdayPeople = people.filter(p => { const b = parseBirthday(p.dob); return b && b.day === day && b.month === month; });
-  if (!contactPeopleIds.length && !birthdayPeople.length) { dd.style.display = 'none'; return; }
+  const archive = (dateObj.getDay() === 0) ? archiveForDate(dateObj) : null;
+  if (!contactPeopleIds.length && !birthdayPeople.length && !archive) { dd.style.display = 'none'; return; }
   dd.style.display = 'block';
   const monthName = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long' });
   document.getElementById('dayDetailTitle').textContent = `${monthName} ${day}`;
@@ -1246,7 +1372,8 @@ function showDayDetail(day, month, year) {
     if (!p) return;
     const el = document.createElement('div');
     el.className = 'dd-person';
-    el.innerHTML = `<span class="dot ${p.status}"></span> Talked with ${p.name} →`;
+    const tea = allLogs.some(l => l.personId === id && l.day === day && l.month === month && l.year === year && l.type === 'tea_time');
+    el.innerHTML = `<span class="dot ${p.status}"></span> ${tea ? "Tea time" : "Talked"} with ${p.name} →`;
     el.onclick = () => openProfile(id);
     list.appendChild(el);
   });
@@ -1257,7 +1384,50 @@ function showDayDetail(day, month, year) {
     el.onclick = () => openProfile(p.id);
     list.appendChild(el);
   });
+  if (archive) {
+    const el = document.createElement('div');
+    el.className = 'dd-person';
+    const yesCount = (arr) => (arr || []).filter(x => x.status === 'yes').length;
+    el.innerHTML = `📋 ${t('archivedWeekTitle')}: ${yesCount(archive.summary.sunday_service)} ${t('statusYes')} (Sunday), ${yesCount(archive.summary.wednesday_service)} ${t('statusYes')} (Wednesday) →`;
+    el.onclick = () => showArchivedReport(archive);
+    list.appendChild(el);
+  }
 }
+
+function showArchivedReport(archive) {
+  currentProfileId = null;
+  showScreen('report');
+  document.querySelectorAll('.tab').forEach(tb => tb.classList.remove('active'));
+  document.getElementById('reportWeekRange').textContent = `${t('archivedWeekTitle')}: ${archive.week_start} → ${archive.week_end} (${t('pastWeekNote')})`;
+  const body = document.getElementById('reportBody');
+  body.innerHTML = "";
+  const section = (title, rows, renderRow) => {
+    const h = document.createElement('div');
+    h.className = 'section-title';
+    h.textContent = title;
+    body.appendChild(h);
+    if (!rows.length) { const s = document.createElement('div'); s.className = 'sub'; s.textContent = t('noPeopleYet'); body.appendChild(s); return; }
+    rows.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'report-card';
+      card.innerHTML = renderRow(r);
+      body.appendChild(card);
+    });
+  };
+  section(t('rtabSunday'), archive.summary.sunday_service || [], r =>
+    `<div class="report-name">${r.name}</div><div class="sub">${t('statusYes').concat(': ')}${r.status}${r.cam_status ? ' · ' + r.cam_status : ''}</div>${r.notes ? `<div class="report-row-label">${t('notesLabel')}</div><div class="sub">${r.notes}</div>` : ''}`
+  );
+  section(t('rtabWednesday'), archive.summary.wednesday_service || [], r =>
+    `<div class="report-name">${r.name}</div><div class="sub">${r.status}${r.cam_status ? ' · ' + r.cam_status : ''}</div>${r.notes ? `<div class="report-row-label">${t('notesLabel')}</div><div class="sub">${r.notes}</div>` : ''}`
+  );
+  section(t('rtabExtra'), archive.summary.additional_info || [], r =>
+    `<div class="report-name">${r.name}</div>
+     ${r.visitation_notes ? `<div class="report-row-label">${t('visitation')}</div><div class="sub">${r.visitation_notes}</div>` : ''}
+     ${r.fellowship_status ? `<div class="report-row-label">${t('fellowship')}</div><div class="sub">${r.fellowship_status}${r.fellowship_notes ? ' — ' + r.fellowship_notes : ''}</div>` : ''}
+     ${r.evangelism_count ? `<div class="report-row-label">${t('evangelism')}</div><div class="sub">${r.evangelism_count} — ${r.evangelism_notes || ''}</div>` : ''}`
+  );
+}
+
 
 // ---- Todos ----
 function renderTodos() {
@@ -1321,13 +1491,242 @@ async function saveTodo() {
   toast();
 }
 
+// ---- Weekly report ----
+let reportTab = 'sunday';
+let serviceData = { sunday: {}, wednesday: {} }; // personId -> row
+let extraData = {}; // personId -> row
+let teaCounts = {}; // personId -> count this week
+
+function sortedPeople() {
+  const order = { hot: 0, warm: 1, cold: 2, black: 3 };
+  return [...people].sort((a, b) => order[a.status] - order[b.status]);
+}
+
+async function loadReportData() {
+  const weekStartIso = toISODate(getWeekStart());
+  const [svcRes, extraRes] = await Promise.all([
+    sb.from('service_attendance').select('*').eq('week_start', weekStartIso),
+    sb.from('additional_info').select('*').eq('week_start', weekStartIso),
+  ]);
+  serviceData = { sunday: {}, wednesday: {} };
+  (svcRes.data || []).forEach(row => { serviceData[row.service_type][row.person_id] = row; });
+  extraData = {};
+  (extraRes.data || []).forEach(row => { extraData[row.person_id] = row; });
+
+  // Tea time counts for this week, from meeting_log
+  const weekStartDate = getWeekStart();
+  teaCounts = {};
+  allLogs.filter(l => l.type === 'tea_time').forEach(l => {
+    const d = new Date(l.year, l.month, l.day);
+    if (d >= weekStartDate) teaCounts[l.personId] = (teaCounts[l.personId] || 0) + 1;
+  });
+}
+
+async function openReport() {
+  showScreen('report');
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.screen === 'report'));
+  document.getElementById('reportTitle').textContent = t('reportTitle');
+  const ws = getWeekStart();
+  const we = new Date(ws); we.setDate(we.getDate() + 6);
+  document.getElementById('reportWeekRange').textContent =
+    `${t('weekOf')} ${ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+  await loadReportData();
+  showReportTab(reportTab);
+}
+
+function showReportTab(tabName) {
+  reportTab = tabName;
+  ['sunday','wednesday','extra'].forEach(name => {
+    document.getElementById('rtab' + name.charAt(0).toUpperCase() + name.slice(1)).classList.toggle('active', name === tabName);
+  });
+  renderReportBody();
+}
+
+function renderReportBody() {
+  document.getElementById('rtabSunday').textContent = t('rtabSunday');
+  document.getElementById('rtabWednesday').textContent = t('rtabWednesday');
+  document.getElementById('rtabExtra').textContent = t('rtabExtra');
+  if (reportTab === 'extra') renderExtraTab();
+  else renderServiceTab(reportTab);
+}
+
+function renderServiceTab(serviceType) {
+  const body = document.getElementById('reportBody');
+  body.innerHTML = "";
+  const list = sortedPeople();
+  if (!list.length) { body.innerHTML = `<div class="sub">${t('noPeopleYet')}</div>`; return; }
+  list.forEach(p => {
+    const row = serviceData[serviceType][p.id] || { status: null, cam_status: null, notes: '' };
+    const card = document.createElement('div');
+    card.className = 'report-card';
+    card.innerHTML = `
+      <div class="report-name"><span class="dot ${p.status}"></span>${p.name}</div>
+      <div class="segmented" style="margin-top:10px;">
+        <button data-val="yes">${t('statusYes')}</button>
+        <button data-val="no">${t('statusNo')}</button>
+        <button data-val="makeup">${t('statusMakeup')}</button>
+      </div>
+      <div class="cam-row" style="display:none; margin-top:8px;">
+        <div class="segmented" style="flex:1;">
+          <button data-cam="on">${t('camOn')}</button>
+          <button data-cam="off">${t('camOff')}</button>
+        </div>
+      </div>
+      <div class="report-row-label">${t('notesLabel')}</div>
+      <textarea class="report-textarea" placeholder="${t('notesLabel')}...">${row.notes || ''}</textarea>
+      <button class="mini-btn danger report-clear">🗑 ${t('clearEntry')}</button>
+    `;
+    const statusBtns = card.querySelectorAll('[data-val]');
+    const camRow = card.querySelector('.cam-row');
+    const camBtns = card.querySelectorAll('[data-cam]');
+    const notesArea = card.querySelector('.report-textarea');
+
+    function refreshButtons() {
+      statusBtns.forEach(b => b.classList.toggle('on', b.dataset.val === row.status));
+      camBtns.forEach(b => b.classList.toggle('on', b.dataset.cam === row.cam_status));
+      camRow.style.display = row.status === 'yes' ? 'flex' : 'none';
+    }
+    refreshButtons();
+
+    async function persist() {
+      const payload = {
+        person_id: p.id, service_type: serviceType, week_start: toISODate(getWeekStart()),
+        status: row.status, cam_status: row.status === 'yes' ? row.cam_status : null, notes: row.notes || '',
+        updated_at: new Date().toISOString()
+      };
+      const { data, error } = await sb.from('service_attendance')
+        .upsert(payload, { onConflict: 'person_id,service_type,week_start' })
+        .select().single();
+      if (error) { console.error(error); return; }
+      serviceData[serviceType][p.id] = data;
+      toast();
+    }
+
+    statusBtns.forEach(b => b.addEventListener('click', () => {
+      row.status = b.dataset.val;
+      if (row.status !== 'yes') row.cam_status = null;
+      refreshButtons();
+      persist();
+    }));
+    camBtns.forEach(b => b.addEventListener('click', () => {
+      row.cam_status = b.dataset.cam;
+      refreshButtons();
+      persist();
+    }));
+    notesArea.addEventListener('blur', () => { row.notes = notesArea.value.trim(); persist(); });
+
+    card.querySelector('.report-clear').addEventListener('click', async () => {
+      const existing = serviceData[serviceType][p.id];
+      if (existing && existing.id) { await sb.from('service_attendance').delete().eq('id', existing.id); }
+      delete serviceData[serviceType][p.id];
+      renderServiceTab(serviceType);
+      toast();
+    });
+
+    body.appendChild(card);
+  });
+}
+
+function renderExtraTab() {
+  const body = document.getElementById('reportBody');
+  body.innerHTML = "";
+  const list = sortedPeople();
+  if (!list.length) { body.innerHTML = `<div class="sub">${t('noPeopleYet')}</div>`; return; }
+  list.forEach(p => {
+    const row = extraData[p.id] || { visitation_notes: '', fellowship_status: null, fellowship_notes: '', evangelism_count: 0, evangelism_notes: '' };
+    const teaCount = teaCounts[p.id] || 0;
+    const card = document.createElement('div');
+    card.className = 'report-card';
+    card.innerHTML = `
+      <div class="report-name"><span class="dot ${p.status}"></span>${p.name}</div>
+
+      <div class="report-row-label">${t('visitation')}</div>
+      <textarea class="report-textarea" data-field="visitation_notes" placeholder="${t('visitation')}...">${row.visitation_notes || ''}</textarea>
+
+      <div class="report-row-label">${t('teaTime')}</div>
+      <div class="tea-row">
+        <span class="sub">${teaCount} ${t('timesThisWeek')}</span>
+        <button class="mini-btn tea-log">${t('logTeaTime')}</button>
+      </div>
+
+      <div class="report-row-label">${t('fellowship')}</div>
+      <div class="segmented">
+        <button data-fel="yes">${t('statusYes')}</button>
+        <button data-fel="no">${t('statusNo')}</button>
+      </div>
+      <textarea class="report-textarea" data-field="fellowship_notes" placeholder="${t('notesLabel')}...">${row.fellowship_notes || ''}</textarea>
+
+      <div class="report-row-label">${t('evangelism')}</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="number" min="0" class="report-num" data-field="evangelism_count" value="${row.evangelism_count || 0}">
+        <span class="sub">${t('evangelismCount')}</span>
+      </div>
+      <textarea class="report-textarea" data-field="evangelism_notes" placeholder="${t('notesLabel')}...">${row.evangelism_notes || ''}</textarea>
+
+      <button class="mini-btn danger report-clear">🗑 ${t('clearEntry')}</button>
+    `;
+
+    const felBtns = card.querySelectorAll('[data-fel]');
+    function refreshFel() { felBtns.forEach(b => b.classList.toggle('on', b.dataset.fel === row.fellowship_status)); }
+    refreshFel();
+
+    async function persist() {
+      const payload = {
+        person_id: p.id, week_start: toISODate(getWeekStart()),
+        visitation_notes: row.visitation_notes || '',
+        fellowship_status: row.fellowship_status, fellowship_notes: row.fellowship_notes || '',
+        evangelism_count: row.evangelism_count || 0, evangelism_notes: row.evangelism_notes || '',
+        updated_at: new Date().toISOString()
+      };
+      const { data, error } = await sb.from('additional_info')
+        .upsert(payload, { onConflict: 'person_id,week_start' })
+        .select().single();
+      if (error) { console.error(error); return; }
+      extraData[p.id] = data;
+      toast();
+    }
+
+    card.querySelector('[data-field="visitation_notes"]').addEventListener('blur', (e) => { row.visitation_notes = e.target.value.trim(); persist(); });
+    card.querySelector('[data-field="fellowship_notes"]').addEventListener('blur', (e) => { row.fellowship_notes = e.target.value.trim(); persist(); });
+    card.querySelector('[data-field="evangelism_notes"]').addEventListener('blur', (e) => { row.evangelism_notes = e.target.value.trim(); persist(); });
+    card.querySelector('[data-field="evangelism_count"]').addEventListener('change', (e) => { row.evangelism_count = parseInt(e.target.value) || 0; persist(); });
+    felBtns.forEach(b => b.addEventListener('click', () => { row.fellowship_status = b.dataset.fel; refreshFel(); persist(); }));
+
+    card.querySelector('.tea-log').addEventListener('click', async () => {
+      const stamp = nowStamp();
+      const { error } = await sb.from('meeting_log').insert({
+        person_id: p.id, entry_date: stamp.split(' · ')[0], entry_text: 'Tea time', entry_type: 'tea_time'
+      });
+      if (error) { console.error(error); return; }
+      await loadAllLogs();
+      await loadReportData();
+      renderExtraTab();
+      renderCalendar();
+      toast();
+    });
+
+    card.querySelector('.report-clear').addEventListener('click', async () => {
+      const existing = extraData[p.id];
+      if (existing && existing.id) { await sb.from('additional_info').delete().eq('id', existing.id); }
+      delete extraData[p.id];
+      renderExtraTab();
+      toast();
+    });
+
+    body.appendChild(card);
+  });
+}
+
+
 async function init() {
   document.getElementById('dateLine').textContent = "Thursday, September 3";
-  await Promise.all([loadPeople(), loadJournal(), loadTodos(), loadAllLogs()]);
+  try { await sb.rpc('archive_and_reset_week'); } catch (e) { console.error('archive rpc failed', e); }
+  await Promise.all([loadPeople(), loadJournal(), loadTodos(), loadAllLogs(), loadWeeklyArchives()]);
   renderBoard();
   renderCalendar();
   renderTodos();
   renderJournal();
+  applyI18n();
 }
 
 // ---- Journal ----
